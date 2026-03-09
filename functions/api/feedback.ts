@@ -72,7 +72,7 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
 
     let rawJson = ''
     const stream = await client.messages.stream({
-      model: 'claude-opus-4-6',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],
     })
