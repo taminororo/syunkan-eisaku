@@ -37,6 +37,7 @@ export default function App() {
 
   // Feedback
   const [feedbackResult, setFeedbackResult] = useState<FeedbackResult | null>(null)
+  const [submittedAnswer, setSubmittedAnswer] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,6 +48,7 @@ export default function App() {
     setVoiceEditedText('')
     voice.reset()
     setFeedbackResult(null)
+    setSubmittedAnswer('')
     setError(null)
   }, [voice])
 
@@ -91,6 +93,7 @@ export default function App() {
 
     try {
       const result = await fetchFeedback(currentJapanese, answer, inputTab)
+      setSubmittedAnswer(answer)
       setFeedbackResult(result)
       setScores(prev => [...prev, result.score])
       setPhase('feedback')
@@ -301,7 +304,7 @@ export default function App() {
 
             {/* Feedback */}
             {phase === 'feedback' && feedbackResult && (
-              <FeedbackCard result={feedbackResult} onNext={goNext} onEnd={endSession} />
+              <FeedbackCard result={feedbackResult} userAnswer={submittedAnswer} onNext={goNext} onEnd={endSession} />
             )}
           </>
         )}

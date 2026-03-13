@@ -3,11 +3,12 @@ import { ScoreBadge } from './ScoreBadge'
 
 interface FeedbackCardProps {
   result: FeedbackResult
+  userAnswer: string
   onNext: () => void
   onEnd: () => void
 }
 
-export function FeedbackCard({ result, onNext, onEnd }: FeedbackCardProps) {
+export function FeedbackCard({ result, userAnswer, onNext, onEnd }: FeedbackCardProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -17,13 +18,20 @@ export function FeedbackCard({ result, onNext, onEnd }: FeedbackCardProps) {
         </span>
       </div>
 
-      {/* Model Answer */}
+      {/* Answer Comparison */}
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          模範解答
+          解答比較
         </div>
-        <div className="px-4 py-3 text-gray-900 dark:text-white font-medium text-base">
-          {result.modelAnswer}
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <div className="px-4 py-3 flex gap-3">
+            <span className="shrink-0 mt-0.5 text-xs font-semibold text-gray-400 dark:text-gray-500 w-16">あなた</span>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{userAnswer}</p>
+          </div>
+          <div className="px-4 py-3 flex gap-3 bg-emerald-50/60 dark:bg-emerald-950/30">
+            <span className="shrink-0 mt-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 w-16">模範解答</span>
+            <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">{result.modelAnswer}</p>
+          </div>
         </div>
       </div>
 
