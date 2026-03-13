@@ -3,15 +3,13 @@ import Dexie, { type EntityTable } from 'dexie'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Problem {
-  id: number
-  japanese: string
-  level: 'beginner' | 'intermediate' | 'advanced'
-}
+type Level = 'beginner' | 'intermediate' | 'advanced'
 
 interface AnswerRecord {
   id?: number
-  problemId: number
+  japanese: string
+  situation: string
+  level: Level
   userAnswer: string
   inputMethod: 'text' | 'voice'
   score: number
@@ -36,24 +34,40 @@ class AppDB extends Dexie {
   constructor() {
     super('SyunkanEisakuDB')
     this.version(1).stores({ answers: '++id, problemId, timestamp' })
+    this.version(2).stores({ answers: '++id, situation, level, timestamp' })
   }
 }
 
 const db = new AppDB()
 
-// ─── Problem Data ─────────────────────────────────────────────────────────────
+// ─── Situation & Level Data ───────────────────────────────────────────────────
 
-const PROBLEMS: Problem[] = [
-  { id: 1, japanese: '私は毎朝コーヒーを飲みます。', level: 'beginner' },
-  { id: 2, japanese: '彼女は昨日、図書館で本を読みました。', level: 'beginner' },
-  { id: 3, japanese: '明日の天気はどうなるでしょうか？', level: 'beginner' },
-  { id: 4, japanese: '私はもっと英語を練習する必要があります。', level: 'beginner' },
-  { id: 5, japanese: '彼はその問題を解決しようとしましたが、うまくいきませんでした。', level: 'intermediate' },
-  { id: 6, japanese: '環境問題は私たち全員が取り組むべき課題です。', level: 'intermediate' },
-  { id: 7, japanese: 'もし私があなたなら、その申し出を断らなかったでしょう。', level: 'intermediate' },
-  { id: 8, japanese: '彼女が駅に着いたとき、電車はすでに出発していました。', level: 'intermediate' },
-  { id: 9, japanese: 'テクノロジーの進歩により、私たちの生活は大きく変わりました。', level: 'advanced' },
-  { id: 10, japanese: '多様な文化を理解することは、グローバル社会で生きる上で重要です。', level: 'advanced' },
+const SITUATIONS = [
+  '日常会話',
+  'ビジネス・会議',
+  '旅行・空港・ホテル',
+  'レストラン・買い物',
+  '学校・大学',
+  'ニュース・時事',
+  '自由テーマ',
+] as const
+
+type Situation = (typeof SITUATIONS)[number]
+
+const SITUATION_ICONS: Record<Situation, string> = {
+  '日常会話': '💬',
+  'ビジネス・会議': '💼',
+  '旅行・空港・ホテル': '✈️',
+  'レストラン・買い物': '🍽️',
+  '学校・大学': '📚',
+  'ニュース・時事': '📰',
+  '自由テーマ': '🎲',
+}
+
+const LEVELS: { value: Level; label: string; desc: string }[] = [
+  { value: 'beginner', label: '初級', desc: '中学英語レベル' },
+  { value: 'intermediate', label: '中級', desc: '高校〜大学レベル' },
+  { value: 'advanced', label: '上級', desc: '英検準1〜1級' },
 ]
 
 // ─── Web Speech API types ─────────────────────────────────────────────────────
@@ -190,7 +204,15 @@ function ScoreBadge({ score }: { score: number }) {
 
 // ─── Feedback Card ────────────────────────────────────────────────────────────
 
-function FeedbackCard({ result, onNext }: { result: FeedbackResult; onNext: () => void }) {
+function FeedbackCard({
+  result,
+  onNext,
+  onEnd,
+}: {
+  result: FeedbackResult
+  onNext: () => void
+  onEnd: () => void
+}) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -249,14 +271,24 @@ function FeedbackCard({ result, onNext }: { result: FeedbackResult; onNext: () =
         </div>
       )}
 
-      <button
-        onClick={onNext}
-        className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white
-          font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-      >
-        次の問題へ
-        <span>→</span>
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onEnd}
+          className="py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700
+            text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50
+            dark:hover:bg-gray-800 transition-colors"
+        >
+          終了
+        </button>
+        <button
+          onClick={onNext}
+          className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white
+            font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+        >
+          次の問題へ
+          <span>→</span>
+        </button>
+      </div>
     </div>
   )
 }
@@ -369,6 +401,158 @@ function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmit, load
   )
 }
 
+// ─── Setup Screen ─────────────────────────────────────────────────────────────
+
+function SetupScreen({
+  situation,
+  onSituationChange,
+  level,
+  onLevelChange,
+  onStart,
+}: {
+  situation: Situation
+  onSituationChange: (s: Situation) => void
+  level: Level
+  onLevelChange: (l: Level) => void
+  onStart: () => void
+}) {
+  return (
+    <div className="space-y-6 py-2">
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">シチュエーション</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {SITUATIONS.map(s => (
+            <button
+              key={s}
+              onClick={() => onSituationChange(s)}
+              className={`py-2.5 px-3 rounded-xl text-sm font-medium text-left transition-colors
+                ${situation === s
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+            >
+              {SITUATION_ICONS[s]} {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">難易度</h2>
+        <div className="space-y-2">
+          {LEVELS.map(({ value, label, desc }) => (
+            <button
+              key={value}
+              onClick={() => onLevelChange(value)}
+              className={`w-full py-3 px-4 rounded-xl text-left transition-colors flex items-center justify-between
+                ${level === value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+            >
+              <span className="font-semibold text-sm">{label}</span>
+              <span className={`text-xs ${level === value ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                {desc}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <button
+        onClick={onStart}
+        className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
+      >
+        スタート
+      </button>
+    </div>
+  )
+}
+
+// ─── Settings Modal ───────────────────────────────────────────────────────────
+
+function SettingsModal({
+  currentSituation,
+  currentLevel,
+  onApply,
+  onCancel,
+}: {
+  currentSituation: Situation
+  currentLevel: Level
+  onApply: (situation: Situation, level: Level) => void
+  onCancel: () => void
+}) {
+  const [situation, setSituation] = useState(currentSituation)
+  const [level, setLevel] = useState(currentLevel)
+
+  return (
+    <div
+      className="fixed inset-0 z-20 bg-black/60 flex items-end"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white dark:bg-gray-900 w-full rounded-t-2xl p-5 space-y-5 max-h-[85vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-gray-900 dark:text-white">設定変更</h3>
+          <button
+            onClick={onCancel}
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          >
+            <CloseIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">シチュエーション</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {SITUATIONS.map(s => (
+              <button
+                key={s}
+                onClick={() => setSituation(s)}
+                className={`py-2 px-3 rounded-xl text-sm font-medium text-left transition-colors
+                  ${situation === s
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+              >
+                {SITUATION_ICONS[s]} {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">難易度</h4>
+          <div className="flex gap-2">
+            {LEVELS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setLevel(value)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors
+                  ${level === value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() => onApply(situation, level)}
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
+        >
+          変更して新しい問題へ
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Tiny SVG Icons ───────────────────────────────────────────────────────────
 
 function MicIcon({ className }: { className?: string }) {
@@ -414,10 +598,36 @@ function MoonIcon() {
   )
 }
 
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function GearIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  )
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
 // ─── Level Badge ──────────────────────────────────────────────────────────────
 
-function LevelBadge({ level }: { level: Problem['level'] }) {
-  const map = {
+function LevelBadge({ level }: { level: Level }) {
+  const map: Record<Level, { label: string; cls: string }> = {
     beginner: { label: '初級', cls: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' },
     intermediate: { label: '中級', cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
     advanced: { label: '上級', cls: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
@@ -428,60 +638,28 @@ function LevelBadge({ level }: { level: Problem['level'] }) {
   )
 }
 
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  const pct = Math.round((current / total) * 100)
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
-        <span>{current} / {total}</span>
-        <span>{pct}%</span>
-      </div>
-      <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-blue-500 transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-// ─── Completion Screen ────────────────────────────────────────────────────────
-
-function CompletionScreen({ avgScore, onRestart }: { avgScore: number; onRestart: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
-      <div className="text-5xl">🎉</div>
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">全問完了！</h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          平均スコア: <strong className="text-blue-600 dark:text-blue-400">{avgScore}点</strong>
-        </p>
-      </div>
-      <button
-        onClick={onRestart}
-        className="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
-      >
-        もう一度挑戦
-      </button>
-    </div>
-  )
-}
-
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
 type InputTab = 'text' | 'voice'
-type AppPhase = 'question' | 'feedback' | 'complete'
+type AppPhase = 'setup' | 'generating' | 'question' | 'feedback'
 
 export default function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
 
-  // Problem state
-  const [problemIndex, setProblemIndex] = useState(0)
-  const [phase, setPhase] = useState<AppPhase>('question')
+  // Settings
+  const [situation, setSituation] = useState<Situation>(SITUATIONS[0])
+  const [level, setLevel] = useState<Level>('beginner')
+  const [showSettings, setShowSettings] = useState(false)
+
+  // Phase & session
+  const [phase, setPhase] = useState<AppPhase>('setup')
+  const [questionCount, setQuestionCount] = useState(0)
   const [scores, setScores] = useState<number[]>([])
+
+  // Current problem
+  const [currentJapanese, setCurrentJapanese] = useState('')
+  const [generateLoading, setGenerateLoading] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
 
   // Input state
   const [inputTab, setInputTab] = useState<InputTab>('text')
@@ -495,23 +673,57 @@ export default function App() {
 
   const voice = useVoiceInput()
 
-  const currentProblem = PROBLEMS[problemIndex]
-
-  // Reset input when moving to next problem
-  useEffect(() => {
+  const resetInput = useCallback(() => {
     setTextAnswer('')
     setVoiceEditedText('')
     voice.reset()
     setFeedbackResult(null)
     setError(null)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [problemIndex])
+  }, [voice])
 
-  const getAnswerText = () =>
-    inputTab === 'text' ? textAnswer.trim() : voiceEditedText.trim()
+  const generateProblem = useCallback(async (sit: Situation, lv: Level) => {
+    setGenerateLoading(true)
+    setGenerateError(null)
+    setPhase('generating')
+    resetInput()
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situation: sit, level: lv }),
+      })
+
+      const data = await res.json() as { japanese?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? '問題の生成に失敗しました')
+      if (!data.japanese) throw new Error('問題の生成に失敗しました')
+
+      setCurrentJapanese(data.japanese)
+      setQuestionCount(prev => prev + 1)
+      setPhase('question')
+    } catch (e) {
+      setGenerateError(e instanceof Error ? e.message : '不明なエラーが発生しました')
+      // phase stays 'generating' to show error + retry
+    } finally {
+      setGenerateLoading(false)
+    }
+  }, [resetInput])
+
+  const startTraining = () => {
+    setScores([])
+    setQuestionCount(0)
+    generateProblem(situation, level)
+  }
+
+  const applySettings = (newSituation: Situation, newLevel: Level) => {
+    setSituation(newSituation)
+    setLevel(newLevel)
+    setShowSettings(false)
+    generateProblem(newSituation, newLevel)
+  }
 
   const submitAnswer = useCallback(async () => {
-    const answer = getAnswerText()
+    const answer = inputTab === 'text' ? textAnswer.trim() : voiceEditedText.trim()
     if (!answer) return
 
     setLoading(true)
@@ -522,17 +734,14 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          japanese: currentProblem.japanese,
+          japanese: currentJapanese,
           userAnswer: answer,
           inputMethod: inputTab,
         }),
       })
 
       const data = await res.json() as FeedbackResult & { error?: string }
-
-      if (!res.ok) {
-        throw new Error(data.error ?? '添削に失敗しました')
-      }
+      if (!res.ok) throw new Error(data.error ?? '添削に失敗しました')
 
       const result: FeedbackResult = {
         score: data.score,
@@ -546,9 +755,10 @@ export default function App() {
       setScores(prev => [...prev, result.score])
       setPhase('feedback')
 
-      // Save to IndexedDB
       await db.answers.add({
-        problemId: currentProblem.id,
+        japanese: currentJapanese,
+        situation,
+        level,
         userAnswer: answer,
         inputMethod: inputTab,
         score: result.score,
@@ -561,23 +771,14 @@ export default function App() {
     } finally {
       setLoading(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputTab, textAnswer, voiceEditedText, currentProblem])
+  }, [inputTab, textAnswer, voiceEditedText, currentJapanese, situation, level])
 
-  const goNext = () => {
-    const next = problemIndex + 1
-    if (next >= PROBLEMS.length) {
-      setPhase('complete')
-    } else {
-      setProblemIndex(next)
-      setPhase('question')
-    }
-  }
+  const goNext = () => generateProblem(situation, level)
 
-  const restart = () => {
-    setProblemIndex(0)
-    setPhase('question')
+  const endSession = () => {
+    setPhase('setup')
     setScores([])
+    setQuestionCount(0)
   }
 
   const avgScore = scores.length
@@ -589,45 +790,117 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
-          <h1 className="font-bold text-lg tracking-tight">瞬間英作文</h1>
-          <button
-            onClick={toggleDark}
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="ダークモード切替"
-          >
-            {dark ? <SunIcon /> : <MoonIcon />}
-          </button>
+          <div className="flex items-center gap-1">
+            {phase !== 'setup' && (
+              <button
+                onClick={endSession}
+                className="p-2 -ml-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="設定に戻る"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+            )}
+            <h1 className="font-bold text-lg tracking-tight">瞬間英作文</h1>
+          </div>
+          <div className="flex items-center gap-1">
+            {phase !== 'setup' && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="設定変更"
+              >
+                <GearIcon className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={toggleDark}
+              className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="ダークモード切替"
+            >
+              {dark ? <SunIcon /> : <MoonIcon />}
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <SettingsModal
+          currentSituation={situation}
+          currentLevel={level}
+          onApply={applySettings}
+          onCancel={() => setShowSettings(false)}
+        />
+      )}
 
       {/* Main */}
       <main className="max-w-xl mx-auto px-4 py-6 space-y-6">
 
-        {phase === 'complete' ? (
-          <CompletionScreen avgScore={avgScore} onRestart={restart} />
+        {phase === 'setup' ? (
+          <SetupScreen
+            situation={situation}
+            onSituationChange={setSituation}
+            level={level}
+            onLevelChange={setLevel}
+            onStart={startTraining}
+          />
         ) : (
           <>
-            {/* Progress */}
-            <ProgressBar current={problemIndex} total={PROBLEMS.length} />
-
-            {/* Problem card */}
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  問題 {problemIndex + 1}
+            {/* Session info bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <span>{SITUATION_ICONS[situation]} {situation}</span>
+                <LevelBadge level={level} />
+              </div>
+              {scores.length > 0 && (
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  平均 {avgScore}点（{scores.length}問）
                 </span>
-                <LevelBadge level={currentProblem.level} />
-              </div>
-              <div className="px-5 py-5">
-                <p className="text-xl font-medium leading-relaxed text-gray-900 dark:text-white">
-                  {currentProblem.japanese}
-                </p>
-              </div>
+              )}
             </div>
 
+            {/* Generating phase */}
+            {phase === 'generating' && (
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 px-5 py-16 flex flex-col items-center gap-4">
+                {generateLoading ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">問題を生成中…</p>
+                  </>
+                ) : generateError ? (
+                  <>
+                    <p className="text-sm text-red-600 dark:text-red-400 text-center">{generateError}</p>
+                    <button
+                      onClick={() => generateProblem(situation, level)}
+                      className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                    >
+                      もう一度生成
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            )}
+
+            {/* Problem card */}
+            {(phase === 'question' || phase === 'feedback') && (
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    問題 {questionCount}問目
+                  </span>
+                  <LevelBadge level={level} />
+                </div>
+                <div className="px-5 py-5">
+                  <p className="text-xl font-medium leading-relaxed text-gray-900 dark:text-white">
+                    {currentJapanese}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Question phase: input */}
             {phase === 'question' && (
               <>
-                {/* Input tabs */}
                 <div className="space-y-3">
                   <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 p-1 gap-1">
                     {(['text', 'voice'] as InputTab[]).map(tab => (
@@ -678,7 +951,6 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Error */}
                 {error && (
                   <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 px-4 py-3">
                     <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -689,7 +961,7 @@ export default function App() {
 
             {/* Feedback */}
             {phase === 'feedback' && feedbackResult && (
-              <FeedbackCard result={feedbackResult} onNext={goNext} />
+              <FeedbackCard result={feedbackResult} onNext={goNext} onEnd={endSession} />
             )}
           </>
         )}
