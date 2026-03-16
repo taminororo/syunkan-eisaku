@@ -73,7 +73,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const data = JSON.parse(value) as StoredResult
   const levelLabel = LEVEL_LABELS[data.level] ?? data.level
-  const title = `🔤 Flash Compose｜${data.situation}（${levelLabel}）${data.score}点`
+  const title = `Flash Compose｜${data.situation}（${levelLabel}）${data.score}点`
   const description = '瞬間英作文に挑戦しました！'
 
   return new Response(buildOgpHtml(title, description, context.request.url), {
