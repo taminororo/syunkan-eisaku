@@ -23,6 +23,19 @@ export interface FeedbackResult {
   pronunciationNote?: string
 }
 
+export interface SharedResult {
+  japanese: string
+  userAnswer: string
+  score: number
+  modelAnswer: string
+  corrections: string[]
+  feedback: string
+  pronunciationNote?: string | null
+  situation: string
+  level: Level
+  createdAt: string
+}
+
 // ─── Web Speech API ───────────────────────────────────────────────────────────
 
 export interface ISpeechRecognitionEvent extends Event {

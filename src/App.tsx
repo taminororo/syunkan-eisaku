@@ -304,7 +304,15 @@ export default function App() {
 
             {/* Feedback */}
             {phase === 'feedback' && feedbackResult && (
-              <FeedbackCard result={feedbackResult} userAnswer={submittedAnswer} onNext={goNext} onEnd={endSession} />
+              <FeedbackCard
+                result={feedbackResult}
+                userAnswer={submittedAnswer}
+                japanese={currentJapanese}
+                situation={situation}
+                level={level}
+                onNext={goNext}
+                onEnd={endSession}
+              />
             )}
           </>
         )}

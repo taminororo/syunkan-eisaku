@@ -1,4 +1,4 @@
-import type { Level, FeedbackResult } from '../types'
+import type { Level, FeedbackResult, SharedResult } from '../types'
 import type { Situation } from '../constants'
 
 export async function fetchGenerateProblem(situation: Situation, level: Level): Promise<string> {
@@ -32,4 +32,16 @@ export async function fetchFeedback(
     feedback: data.feedback,
     pronunciationNote: data.pronunciationNote,
   }
+}
+
+export async function postShare(payload: Omit<SharedResult, 'createdAt'>): Promise<string> {
+  const res = await fetch('/api/share', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await res.json() as { id?: string; error?: string }
+  if (!res.ok) throw new Error(data.error ?? '共有に失敗しました')
+  if (!data.id) throw new Error('共有に失敗しました')
+  return data.id
 }

@@ -1,3 +1,9 @@
 name = "syunkan-eisaku"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-01-01"
+
+# KV namespace for storing shared results (TTL 30 days)
+# For production: replace id with output of `wrangler kv:namespace create RESULTS_KV`
+[[kv_namespaces]]
+binding = "RESULTS_KV"
+id = "576c99a99218471bbc0954a5ddc02a45"
