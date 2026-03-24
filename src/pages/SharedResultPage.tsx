@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { SharedResult, FeedbackResult, InputTab } from '../types'
-import { SITUATION_ICONS, type Situation } from '../constants'
+import { SituationIcon } from '../components/SituationIcon'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { useVoiceInput } from '../hooks/useVoiceInput'
 import { fetchFeedback, postShare } from '../api/client'
@@ -117,10 +117,6 @@ export function SharedResultPage({ id }: { id: string }) {
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`
   const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
 
-  const situationIcon = data
-    ? (SITUATION_ICONS[data.situation as Situation] ?? '📝')
-    : null
-
   const battleVerdict = myResult && data
     ? myResult.score > data.score ? 'win' : myResult.score < data.score ? 'lose' : 'draw'
     : null
@@ -177,7 +173,10 @@ export function SharedResultPage({ id }: { id: string }) {
           <>
             {/* Situation / Level */}
             <div className="flex items-center gap-2 text-sm text-text-secondary animate-fade-in">
-              <span>{situationIcon} {data.situation}</span>
+              <span className="inline-flex items-center gap-1.5">
+                <SituationIcon situation={data.situation} className="w-4 h-4 shrink-0" strokeWidth={2} />
+                {data.situation}
+              </span>
               <LevelBadge level={data.level} />
             </div>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Level } from '../types'
-import { SITUATIONS, SITUATION_ICONS, LEVELS, type Situation } from '../constants'
+import { SITUATIONS, LEVELS, type Situation } from '../constants'
+import { SituationIcon } from './SituationIcon'
 import { CloseIcon } from './Icons'
 
 interface SettingsModalProps {
@@ -46,7 +47,10 @@ export function SettingsModal({ currentSituation, currentLevel, onApply, onCance
                     : 'bg-bg-secondary text-text-primary hover:brightness-95 dark:hover:brightness-110'
                   }`}
               >
-                {SITUATION_ICONS[s]} {s}
+                <span className="inline-flex items-center gap-1.5">
+                  <SituationIcon situation={s} className="w-4 h-4 shrink-0" strokeWidth={2} />
+                  {s}
+                </span>
               </button>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Level } from '../types'
-import { SITUATIONS, SITUATION_ICONS, LEVELS, type Situation } from '../constants'
+import { SITUATIONS, LEVELS, type Situation } from '../constants'
+import { SituationIcon } from './SituationIcon'
 import { useAuth } from '../contexts/AuthContext'
 
 interface SetupScreenProps {
@@ -43,7 +44,7 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
                   }`}
                 style={{ transitionDuration: 'var(--duration-normal)', transitionTimingFunction: 'var(--ease-default)' }}
               >
-                <span className="text-2xl block mb-1.5">{SITUATION_ICONS[s]}</span>
+                <SituationIcon situation={s} className="w-7 h-7 block mb-1.5" strokeWidth={1.75} />
                 <span className="text-sm font-medium leading-tight">{s}</span>
               </button>
             )

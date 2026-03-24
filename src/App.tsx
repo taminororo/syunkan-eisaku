@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { Level, FeedbackResult, InputTab, AppPhase } from './types'
-import { SITUATIONS, SITUATION_ICONS, type Situation } from './constants'
+import { SITUATIONS, type Situation } from './constants'
+import { SituationIcon } from './components/SituationIcon'
 import { db } from './db'
 import { fetchGenerateProblem, fetchFeedback } from './api/client'
 import { useVoiceInput } from './hooks/useVoiceInput'
@@ -208,7 +209,10 @@ export default function App() {
             {/* Session info bar */}
             <div className="flex items-center justify-between animate-fade-in">
               <div className="flex items-center gap-2 text-sm text-text-secondary">
-                <span>{SITUATION_ICONS[situation]} {situation}</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <SituationIcon situation={situation} className="w-4 h-4 shrink-0" strokeWidth={2} />
+                  {situation}
+                </span>
                 <LevelBadge level={level} />
               </div>
               {scores.length > 0 && (
