@@ -9,6 +9,7 @@ export function useDarkMode() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     localStorage.setItem('darkMode', String(dark))
   }, [dark])
 

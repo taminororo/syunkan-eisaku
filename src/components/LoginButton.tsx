@@ -9,8 +9,8 @@ export function LoginButton() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400
-          border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+        className="px-3 py-1.5 rounded-lg text-sm font-medium text-accent
+          border border-accent-border hover:bg-accent-bg transition-colors"
       >
         ログイン
       </button>
@@ -18,17 +18,17 @@ export function LoginButton() {
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg z-30 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-48 rounded-xl border border-border bg-bg-surface shadow-lg z-30 overflow-hidden">
             <button
               onClick={() => login('google')}
-              className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-3 text-left text-sm hover:bg-bg-secondary transition-colors flex items-center gap-2"
             >
               <GoogleIcon />
               Google
             </button>
             <button
               onClick={() => login('github')}
-              className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 border-t border-gray-100 dark:border-gray-800"
+              className="w-full px-4 py-3 text-left text-sm hover:bg-bg-secondary transition-colors flex items-center gap-2 border-t border-border"
             >
               <GitHubIcon />
               GitHub

@@ -22,7 +22,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
 
   if (!supported) {
     return (
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center text-sm text-gray-400 dark:text-gray-500">
+      <div className="rounded-xl border border-border p-6 text-center text-sm text-text-secondary">
         このブラウザは音声入力に対応していません。<br />テキスト入力をご利用ください。
       </div>
     )
@@ -31,19 +31,19 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
   return (
     <div className="space-y-3">
       {/* Recording area */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 min-h-[100px] p-4 text-sm relative">
+      <div className="rounded-xl border border-border min-h-[100px] p-4 text-sm relative">
         {voiceState === 'idle' && !editedText && (
-          <span className="text-gray-400 dark:text-gray-500">マイクボタンで録音を開始してください</span>
+          <span className="text-text-secondary">マイクボタンで録音を開始してください</span>
         )}
         {voiceState === 'recording' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-xs text-red-500 dark:text-red-400 font-medium">録音中…</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-error animate-pulse" />
+              <span className="text-xs text-error font-medium">録音中…</span>
             </div>
-            <p className="text-gray-700 dark:text-gray-300">{finalText}</p>
+            <p className="text-text-primary">{finalText}</p>
             {interimText && (
-              <p className="text-gray-400 dark:text-gray-500 italic">{interimText}</p>
+              <p className="text-text-secondary italic">{interimText}</p>
             )}
           </div>
         )}
@@ -51,7 +51,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
           <textarea
             value={editedText}
             onChange={e => onEditedTextChange(e.target.value)}
-            className="w-full h-full bg-transparent text-gray-900 dark:text-white resize-none focus:outline-none text-sm"
+            className="w-full h-full bg-transparent text-text-primary resize-none focus:outline-none text-sm"
             rows={4}
             placeholder="認識結果を編集できます"
           />
@@ -63,7 +63,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
         {voiceState === 'idle' && (
           <button
             onClick={start}
-            className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white
+            className="flex-1 py-3 rounded-xl bg-error hover:brightness-110 text-white
               font-semibold text-sm transition-colors flex items-center justify-center gap-2"
           >
             <MicIcon className="w-4 h-4" />
@@ -74,7 +74,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
         {voiceState === 'recording' && (
           <button
             onClick={stop}
-            className="flex-1 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white
+            className="flex-1 py-3 rounded-xl bg-bg-secondary text-text-primary hover:brightness-95 dark:hover:brightness-110
               font-semibold text-sm transition-colors flex items-center justify-center gap-2"
           >
             <StopIcon className="w-4 h-4" />
@@ -86,9 +86,9 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
           <>
             <button
               onClick={reset}
-              className="py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700
-                text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50
-                dark:hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+              className="py-3 px-4 rounded-xl border border-border
+                text-text-primary font-medium text-sm hover:bg-bg-secondary
+                transition-colors flex items-center gap-1.5"
             >
               <MicIcon className="w-4 h-4" />
               再録音
@@ -96,7 +96,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
             <button
               onClick={onSubmit}
               disabled={!editedText.trim() || loading}
-              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40
+              className="flex-1 py-3 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-40
                 text-white font-semibold text-sm transition-colors"
             >
               {loading ? '添削中…' : '送信'}

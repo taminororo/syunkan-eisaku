@@ -5,6 +5,35 @@
 @tailwind utilities;
 
 @layer base {
+  /* tokens.css を補完する追加変数 */
+  [data-theme="light"] {
+    --border: #e5e5e0;
+    --border-hover: #d4d4cf;
+    --success: #27ae60;
+    --success-bg: rgba(39, 174, 96, 0.1);
+    --warning: #e67e22;
+    --warning-bg: rgba(230, 126, 34, 0.1);
+    --warning-border: rgba(230, 126, 34, 0.25);
+    --error: #c0392b;
+    --error-bg: rgba(192, 57, 43, 0.08);
+    --accent-bg: rgba(233, 69, 96, 0.08);
+    --accent-border: rgba(233, 69, 96, 0.2);
+  }
+
+  [data-theme="dark"] {
+    --border: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.15);
+    --success: #2ecc71;
+    --success-bg: rgba(46, 204, 113, 0.12);
+    --warning: #f39c12;
+    --warning-bg: rgba(243, 156, 18, 0.12);
+    --warning-border: rgba(243, 156, 18, 0.25);
+    --error: #e74c3c;
+    --error-bg: rgba(231, 76, 60, 0.1);
+    --accent-bg: rgba(233, 69, 96, 0.12);
+    --accent-border: rgba(233, 69, 96, 0.25);
+  }
+
   html {
     font-family: var(--font-body);
   }
@@ -15,5 +44,124 @@
 
   code, pre, kbd {
     font-family: var(--font-mono);
+  }
+}
+
+/* ─── Animations ─── */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes card-select {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wave-dot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-8px); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes score-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes typewriter-word {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes result-flash {
+  0%   { opacity: 0; transform: scale(0.8); }
+  50%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up var(--duration-normal) var(--ease-default) both;
+  }
+
+  .animate-fade-in {
+    animation: fade-in var(--duration-normal) var(--ease-default) both;
+  }
+
+  .animate-fade-out {
+    animation: fade-out var(--duration-fast) var(--ease-default) both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in var(--duration-normal) var(--ease-bounce) both;
+  }
+
+  .animate-card-select {
+    animation: card-select var(--duration-fast) var(--ease-default);
+  }
+
+  .animate-score-pop {
+    animation: score-pop var(--duration-slow) var(--ease-bounce) both;
+  }
+
+  .animate-slide-up-enter {
+    animation: slide-up-enter var(--duration-normal) var(--ease-default) both;
+  }
+
+  .animate-result-flash {
+    animation: result-flash var(--duration-slow) var(--ease-bounce) both;
+  }
+
+  /* Stagger support */
+  .stagger-1 { animation-delay: 0ms; }
+  .stagger-2 { animation-delay: 80ms; }
+  .stagger-3 { animation-delay: 160ms; }
+  .stagger-4 { animation-delay: 240ms; }
+  .stagger-5 { animation-delay: 320ms; }
+  .stagger-6 { animation-delay: 400ms; }
+
+  /* Wave dots loader */
+  .wave-dot {
+    animation: wave-dot 1.2s ease-in-out infinite;
+  }
+  .wave-dot:nth-child(2) { animation-delay: 0.15s; }
+  .wave-dot:nth-child(3) { animation-delay: 0.3s; }
+
+  /* Focus ring animation */
+  .focus-ring-animate {
+    transition: box-shadow var(--duration-normal) var(--ease-default),
+                border-color var(--duration-normal) var(--ease-default);
+  }
+  .focus-ring-animate:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
   }
 }

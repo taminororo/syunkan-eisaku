@@ -61,40 +61,41 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <ScoreBadge score={result.score} />
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+      {/* Score with count-up + confetti */}
+      <div className="flex items-center gap-3 animate-fade-in-up stagger-1">
+        <ScoreBadge score={result.score} animate />
+        <span className="text-sm text-text-secondary">
           {result.score >= 90 ? '素晴らしい！' : result.score >= 70 ? 'よくできました' : result.score >= 50 ? 'もう少し！' : '頑張ろう'}
         </span>
       </div>
 
-      {/* Answer Comparison */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+      {/* Answer Comparison — staggered */}
+      <div className="rounded-xl border border-border overflow-hidden animate-fade-in-up stagger-2">
+        <div className="px-4 py-2 bg-bg-secondary text-xs font-semibold text-text-secondary uppercase tracking-wide">
           解答比較
         </div>
-        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+        <div className="divide-y divide-border">
           <div className="px-4 py-3 flex gap-3">
-            <span className="shrink-0 mt-0.5 text-xs font-semibold text-gray-400 dark:text-gray-500 w-16">あなた</span>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{userAnswer}</p>
+            <span className="shrink-0 mt-0.5 text-xs font-semibold text-text-secondary w-16">あなた</span>
+            <p className="text-sm text-text-primary leading-relaxed">{userAnswer}</p>
           </div>
-          <div className="px-4 py-3 flex gap-3 bg-emerald-50/60 dark:bg-emerald-950/30">
-            <span className="shrink-0 mt-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 w-16">模範解答</span>
-            <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">{result.modelAnswer}</p>
+          <div className="px-4 py-3 flex gap-3 bg-success-bg">
+            <span className="shrink-0 mt-0.5 text-xs font-semibold text-success w-16">模範解答</span>
+            <p className="text-sm font-medium text-text-primary leading-relaxed">{result.modelAnswer}</p>
           </div>
         </div>
       </div>
 
-      {/* Corrections */}
+      {/* Corrections — staggered */}
       {result.corrections.length > 0 && (
-        <div className="rounded-xl border border-amber-200 dark:border-amber-800 overflow-hidden">
-          <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950 text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+        <div className="rounded-xl border border-warning-border overflow-hidden animate-fade-in-up stagger-3">
+          <div className="px-4 py-2 bg-warning-bg text-xs font-semibold text-warning uppercase tracking-wide">
             修正ポイント
           </div>
-          <ul className="divide-y divide-amber-100 dark:divide-amber-900">
+          <ul className="divide-y divide-warning-border">
             {result.corrections.map((c, i) => (
-              <li key={i} className="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 flex gap-2">
-                <span className="text-amber-500 mt-0.5">•</span>
+              <li key={i} className="px-4 py-2.5 text-sm text-text-primary flex gap-2">
+                <span className="text-warning mt-0.5">•</span>
                 <span>{c}</span>
               </li>
             ))}
@@ -102,20 +103,20 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
         </div>
       )}
 
-      {/* Feedback */}
-      <div className="rounded-xl border border-blue-100 dark:border-blue-900 overflow-hidden">
-        <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950 text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide">
+      {/* Feedback — staggered */}
+      <div className="rounded-xl border border-accent-border overflow-hidden animate-fade-in-up stagger-4">
+        <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
           フィードバック
         </div>
-        <p className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <p className="px-4 py-3 text-sm text-text-primary leading-relaxed">
           {result.feedback}
         </p>
       </div>
 
-      {/* Weak Categories */}
+      {/* Weak Categories — staggered */}
       {result.weakCategories && result.weakCategories.length > 0 && (
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div className="rounded-xl border border-border overflow-hidden animate-fade-in-up stagger-5">
+          <div className="px-4 py-2 bg-bg-secondary text-xs font-semibold text-text-secondary uppercase tracking-wide">
             弱点カテゴリ
           </div>
           <div className="px-4 py-3 flex flex-wrap gap-2">
@@ -124,8 +125,8 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
                 key={i}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
                   wc.severity === 'major'
-                    ? 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'
-                    : 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400'
+                    ? 'bg-error-bg text-error'
+                    : 'bg-warning-bg text-warning'
                 }`}
               >
                 {WEAK_CATEGORY_LABELS[wc.category] ?? wc.category}
@@ -134,39 +135,39 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
             ))}
           </div>
           {!user && (
-            <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                <a href="/api/auth/google" className="text-blue-500 hover:underline">ログイン</a>すると弱点の傾向を分析できます
+            <div className="px-4 py-2 border-t border-border">
+              <p className="text-xs text-text-secondary">
+                <a href="/api/auth/google" className="text-accent hover:underline">ログイン</a>すると弱点の傾向を分析できます
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* Pronunciation Note */}
+      {/* Pronunciation Note — staggered */}
       {result.pronunciationNote && (
-        <div className="rounded-xl border border-purple-100 dark:border-purple-900 overflow-hidden">
-          <div className="px-4 py-2 bg-purple-50 dark:bg-purple-950 text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wide">
+        <div className="rounded-xl border border-accent-border overflow-hidden animate-fade-in-up stagger-5">
+          <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
             発音メモ
           </div>
-          <p className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p className="px-4 py-3 text-sm text-text-primary leading-relaxed">
             {result.pronunciationNote}
           </p>
         </div>
       )}
 
-      {/* Share */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+      {/* Share — staggered */}
+      <div className="rounded-xl border border-border overflow-hidden animate-fade-in-up stagger-6">
+        <div className="px-4 py-2 bg-bg-secondary text-xs font-semibold text-text-secondary uppercase tracking-wide">
           結果を共有
         </div>
         <div className="px-4 py-3">
           {sharePhase === 'idle' && (
             <button
               onClick={handleShare}
-              className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
-                text-gray-700 dark:text-gray-300 font-medium text-sm
-                hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="w-full py-2.5 rounded-xl border border-border
+                text-text-primary font-medium text-sm
+                hover:bg-bg-secondary transition-colors"
             >
               共有リンクを生成
             </button>
@@ -174,8 +175,8 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
 
           {sharePhase === 'loading' && (
             <div className="flex items-center justify-center gap-2 py-2">
-              <div className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-              <span className="text-sm text-gray-500 dark:text-gray-400">生成中…</span>
+              <div className="w-4 h-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+              <span className="text-sm text-text-secondary">生成中…</span>
             </div>
           )}
 
@@ -200,25 +201,25 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
                 </a>
                 <button
                   onClick={handleCopy}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
-                    text-gray-700 dark:text-gray-300 font-semibold text-sm
-                    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-border
+                    text-text-primary font-semibold text-sm
+                    hover:bg-bg-secondary transition-colors"
                 >
                   {copied ? 'コピー済！' : 'リンクコピー'}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500 break-all">{shareUrl}</p>
+              <p className="text-xs text-text-secondary break-all">{shareUrl}</p>
             </div>
           )}
 
           {sharePhase === 'error' && (
             <div className="space-y-2">
-              <p className="text-sm text-red-600 dark:text-red-400">{shareError}</p>
+              <p className="text-sm text-error">{shareError}</p>
               <button
                 onClick={handleShare}
-                className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
-                  text-gray-700 dark:text-gray-300 font-medium text-sm
-                  hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="w-full py-2.5 rounded-xl border border-border
+                  text-text-primary font-medium text-sm
+                  hover:bg-bg-secondary transition-colors"
               >
                 再試行
               </button>
@@ -227,20 +228,22 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-2">
+      {/* Actions — staggered */}
+      <div className="flex gap-2 animate-fade-in-up stagger-6">
         <button
           onClick={onEnd}
-          className="py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700
-            text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50
-            dark:hover:bg-gray-800 transition-colors"
+          className="py-3 px-4 rounded-xl border border-border
+            text-text-primary font-medium text-sm hover:bg-bg-secondary
+            transition-colors"
         >
           終了
         </button>
         <button
           onClick={onNext}
-          className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white
-            font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white
+            font-semibold text-sm transition-colors flex items-center justify-center gap-2
+            active:scale-[0.98]"
+          style={{ transitionDuration: 'var(--duration-fast)' }}
         >
           次の問題へ
           <span>→</span>

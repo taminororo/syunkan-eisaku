@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Level } from '../types'
 import { SITUATIONS, SITUATION_ICONS, LEVELS, type Situation } from '../constants'
 import { useAuth } from '../contexts/AuthContext'
@@ -12,71 +13,105 @@ interface SetupScreenProps {
 
 export function SetupScreen({ situation, onSituationChange, level, onLevelChange, onStart }: SetupScreenProps) {
   const { user } = useAuth()
+  const [selectedDesc, setSelectedDesc] = useState<string>(
+    LEVELS.find(l => l.value === level)?.desc ?? ''
+  )
+
+  const handleLevelChange = (l: Level) => {
+    onLevelChange(l)
+    setSelectedDesc(LEVELS.find(lv => lv.value === l)?.desc ?? '')
+  }
 
   return (
-    <div className="space-y-6 py-2">
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">シチュエーション</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {SITUATIONS.map(s => (
-            <button
-              key={s}
-              onClick={() => onSituationChange(s)}
-              className={`py-2.5 px-3 rounded-xl text-sm font-medium text-left transition-colors
-                ${situation === s
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-            >
-              {SITUATION_ICONS[s]} {s}
-            </button>
-          ))}
+    <div className="space-y-8 pb-24">
+      {/* Situation cards */}
+      <div className="space-y-3 animate-fade-in-up stagger-1">
+        <h2 className="text-sm font-semibold text-text-secondary tracking-wide uppercase">
+          シチュエーション
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          {SITUATIONS.map(s => {
+            const selected = situation === s
+            return (
+              <button
+                key={s}
+                onClick={() => onSituationChange(s)}
+                className={`group relative p-4 rounded-xl text-left transition-all
+                  ${selected
+                    ? 'bg-accent text-white shadow-md scale-[1.02] animate-card-select'
+                    : 'bg-bg-surface border border-border text-text-primary hover:shadow-md hover:-translate-y-0.5'
+                  }`}
+                style={{ transitionDuration: 'var(--duration-normal)', transitionTimingFunction: 'var(--ease-default)' }}
+              >
+                <span className="text-2xl block mb-1.5">{SITUATION_ICONS[s]}</span>
+                <span className="text-sm font-medium leading-tight">{s}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">難易度</h2>
-        <div className="space-y-2">
-          {LEVELS.map(({ value, label, desc }) => (
-            <button
-              key={value}
-              onClick={() => onLevelChange(value)}
-              className={`w-full py-3 px-4 rounded-xl text-left transition-colors flex items-center justify-between
-                ${level === value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-            >
-              <span className="font-semibold text-sm">{label}</span>
-              <span className={`text-xs ${level === value ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                {desc}
-              </span>
-            </button>
-          ))}
+      {/* Difficulty segment control */}
+      <div className="space-y-3 animate-fade-in-up stagger-2">
+        <h2 className="text-sm font-semibold text-text-secondary tracking-wide uppercase">
+          難易度
+        </h2>
+        <div className="relative flex rounded-xl bg-bg-secondary p-1 gap-1">
+          {LEVELS.map(({ value, label }) => {
+            const selected = level === value
+            return (
+              <button
+                key={value}
+                onClick={() => handleLevelChange(value)}
+                className={`relative flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all z-10
+                  ${selected
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                style={{ transitionDuration: 'var(--duration-normal)', transitionTimingFunction: 'var(--ease-default)' }}
+              >
+                {label}
+              </button>
+            )
+          })}
         </div>
+        {/* Animated description */}
+        <p
+          className="text-xs text-text-secondary text-center animate-fade-in"
+          key={selectedDesc}
+        >
+          {selectedDesc}
+        </p>
       </div>
-
-      <button
-        onClick={onStart}
-        className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
-      >
-        スタート
-      </button>
 
       {/* Dashboard link */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-        {user ? (
-          <a
-            href="/dashboard"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+      <div className="animate-fade-in-up stagger-3">
+        <div className="rounded-xl border border-border px-4 py-3 text-center">
+          {user ? (
+            <a href="/dashboard" className="text-sm font-medium text-accent hover:underline">
+              弱点分析ダッシュボードを見る
+            </a>
+          ) : (
+            <p className="text-xs text-text-secondary">
+              <a href="/api/auth/google" className="text-accent hover:underline">ログイン</a>すると弱点分析が利用できます
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Sticky start button */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-bg-primary via-bg-primary to-transparent">
+        <div className="max-w-xl mx-auto">
+          <button
+            onClick={onStart}
+            className="w-full py-4 rounded-xl bg-accent hover:bg-accent-hover text-white
+              font-bold text-base shadow-lg transition-all
+              active:scale-[0.98]"
+            style={{ transitionDuration: 'var(--duration-fast)', transitionTimingFunction: 'var(--ease-bounce)' }}
           >
-            弱点分析ダッシュボードを見る
-          </a>
-        ) : (
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            <a href="/api/auth/google" className="text-blue-500 hover:underline">ログイン</a>すると弱点分析が利用できます
-          </p>
-        )}
+            スタート
+          </button>
+        </div>
       </div>
     </div>
   )

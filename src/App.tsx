@@ -14,6 +14,8 @@ import { SetupScreen } from './components/SetupScreen'
 import { SettingsModal } from './components/SettingsModal'
 import { LoginButton } from './components/LoginButton'
 import { UserMenu } from './components/UserMenu'
+import { GradingOverlay } from './components/GradingOverlay'
+import { TypewriterText } from './components/TypewriterText'
 
 export default function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
@@ -46,6 +48,9 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Grading animation
+  const [grading, setGrading] = useState(false)
+
   const voice = useVoiceInput()
 
   const resetInput = useCallback(() => {
@@ -71,7 +76,6 @@ export default function App() {
       setPhase('question')
     } catch (e) {
       setGenerateError(e instanceof Error ? e.message : '不明なエラーが発生しました')
-      // phase stays 'generating' to show error + retry
     } finally {
       setGenerateLoading(false)
     }
@@ -95,6 +99,7 @@ export default function App() {
     if (!answer) return
 
     setLoading(true)
+    setGrading(true)
     setError(null)
 
     try {
@@ -102,6 +107,7 @@ export default function App() {
       setSubmittedAnswer(answer)
       setFeedbackResult(result)
       setScores(prev => [...prev, result.score])
+      setGrading(false)
       setPhase('feedback')
 
       await db.answers.add({
@@ -117,6 +123,7 @@ export default function App() {
         timestamp: new Date(),
       })
     } catch (e) {
+      setGrading(false)
       setError(e instanceof Error ? e.message : '不明なエラーが発生しました')
     } finally {
       setLoading(false)
@@ -137,27 +144,27 @@ export default function App() {
     : 0
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white transition-colors">
+    <div className="min-h-screen bg-bg-primary text-text-primary transition-colors">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <header className="sticky top-0 z-10 bg-bg-primary/80 backdrop-blur border-b border-border">
         <div className="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-1">
             {phase !== 'setup' && (
               <button
                 onClick={endSession}
-                className="p-2 -ml-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 -ml-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
                 aria-label="設定に戻る"
               >
                 <ChevronLeftIcon className="w-5 h-5" />
               </button>
             )}
-            <h1 className="font-bold text-lg tracking-tight">瞬間英作文</h1>
+            <h1 className="font-bold text-lg tracking-tight font-display">瞬間英作文</h1>
           </div>
           <div className="flex items-center gap-1">
             {phase !== 'setup' && (
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
                 aria-label="設定変更"
               >
                 <GearIcon className="w-5 h-5" />
@@ -165,7 +172,7 @@ export default function App() {
             )}
             <button
               onClick={toggleDark}
-              className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
               aria-label="ダークモード切替"
             >
               {dark ? <SunIcon /> : <MoonIcon />}
@@ -199,13 +206,13 @@ export default function App() {
         ) : (
           <>
             {/* Session info bar */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between animate-fade-in">
+              <div className="flex items-center gap-2 text-sm text-text-secondary">
                 <span>{SITUATION_ICONS[situation]} {situation}</span>
                 <LevelBadge level={level} />
               </div>
               {scores.length > 0 && (
-                <span className="text-xs text-gray-400 dark:text-gray-500">
+                <span className="text-xs text-text-secondary">
                   平均 {avgScore}点（{scores.length}問）
                 </span>
               )}
@@ -213,18 +220,18 @@ export default function App() {
 
             {/* Generating phase */}
             {phase === 'generating' && (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 px-5 py-16 flex flex-col items-center gap-4">
+              <div className="rounded-2xl border border-border px-5 py-16 flex flex-col items-center gap-4 animate-fade-in">
                 {generateLoading ? (
                   <>
-                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">問題を生成中…</p>
+                    <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                    <p className="text-sm text-text-secondary">問題を生成中…</p>
                   </>
                 ) : generateError ? (
                   <>
-                    <p className="text-sm text-red-600 dark:text-red-400 text-center">{generateError}</p>
+                    <p className="text-sm text-error text-center">{generateError}</p>
                     <button
                       onClick={() => generateProblem(situation, level)}
-                      className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                      className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors"
                     >
                       もう一度生成
                     </button>
@@ -234,37 +241,48 @@ export default function App() {
             )}
 
             {/* Problem card */}
-            {(phase === 'question' || phase === 'feedback') && (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+            {(phase === 'question' || phase === 'feedback') && !grading && (
+              <div className="rounded-2xl border border-border overflow-hidden animate-slide-up-enter">
+                <div className="px-5 py-3 bg-bg-secondary flex items-center justify-between">
+                  <span className="text-xs text-text-secondary font-medium">
                     問題 {questionCount}問目
                   </span>
                   <LevelBadge level={level} />
                 </div>
-                <div className="px-5 py-5">
-                  <p className="text-xl font-medium leading-relaxed text-gray-900 dark:text-white">
-                    {currentJapanese}
-                  </p>
+                <div className="px-5 py-6">
+                  {phase === 'question' ? (
+                    <TypewriterText
+                      text={currentJapanese}
+                      className="text-xl font-medium leading-relaxed text-text-primary"
+                    />
+                  ) : (
+                    <p className="text-xl font-medium leading-relaxed text-text-primary">
+                      {currentJapanese}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* Grading overlay */}
+            {grading && <GradingOverlay />}
+
             {/* Question phase: input */}
-            {phase === 'question' && (
-              <>
+            {phase === 'question' && !grading && (
+              <div className="animate-fade-in-up">
                 <div className="space-y-3">
-                  <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 p-1 gap-1">
+                  <div className="flex rounded-xl overflow-hidden border border-border p-1 gap-1">
                     {(['text', 'voice'] as InputTab[]).map(tab => (
                       <button
                         key={tab}
                         onClick={() => setInputTab(tab)}
                         disabled={tab === 'voice' && !voice.supported}
-                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed
                           ${inputTab === tab
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ? 'bg-accent text-white shadow-sm'
+                            : 'text-text-secondary hover:bg-bg-secondary'
                           }`}
+                        style={{ transitionDuration: 'var(--duration-normal)' }}
                       >
                         {tab === 'text' ? '⌨️ テキスト' : `🎙️ 音声${!voice.supported ? '（非対応）' : ''}`}
                       </button>
@@ -278,16 +296,17 @@ export default function App() {
                         onChange={e => setTextAnswer(e.target.value)}
                         placeholder="英文を入力してください…"
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
-                          bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm
-                          resize-none focus:outline-none focus:ring-2 focus:ring-blue-500
-                          placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                        className="w-full px-4 py-3 rounded-xl border border-border
+                          bg-bg-secondary text-text-primary text-sm
+                          resize-none focus:outline-none focus-ring-animate
+                          placeholder:text-text-secondary"
                       />
                       <button
                         onClick={submitAnswer}
                         disabled={!textAnswer.trim() || loading}
-                        className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40
-                          text-white font-semibold text-sm transition-colors"
+                        className="w-full py-3 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-40
+                          text-white font-semibold text-sm transition-all active:scale-[0.98]"
+                        style={{ transitionDuration: 'var(--duration-fast)' }}
                       >
                         {loading ? '添削中…' : '送信して添削'}
                       </button>
@@ -304,11 +323,11 @@ export default function App() {
                 </div>
 
                 {error && (
-                  <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 px-4 py-3">
-                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                  <div className="rounded-xl border border-error bg-error-bg px-4 py-3 mt-3 animate-fade-in">
+                    <p className="text-sm text-error">{error}</p>
                   </div>
                 )}
-              </>
+              </div>
             )}
 
             {/* Feedback */}

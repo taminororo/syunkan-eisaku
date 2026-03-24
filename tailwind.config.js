@@ -19,10 +19,26 @@ module.exports = {
         accent: {
           DEFAULT: 'var(--accent)',
           hover: 'var(--accent-hover)',
+          bg: 'var(--accent-bg)',
+          border: 'var(--accent-border)',
         },
-        success: tokens.color.light.success,
-        warning: tokens.color.light.warning,
-        error: tokens.color.light.error,
+        success: {
+          DEFAULT: 'var(--success)',
+          bg: 'var(--success-bg)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          bg: 'var(--warning-bg)',
+          border: 'var(--warning-border)',
+        },
+        error: {
+          DEFAULT: 'var(--error)',
+          bg: 'var(--error-bg)',
+        },
+        border: {
+          DEFAULT: 'var(--border)',
+          hover: 'var(--border-hover)',
+        },
       },
       fontFamily: {
         display: [tokens.typography['font-display']],
@@ -30,7 +46,6 @@ module.exports = {
         mono: [tokens.typography['font-mono']],
       },
       fontSize: tokens.typography.size,
-      spacing: tokens.spacing,
       borderRadius: tokens.radius,
       boxShadow: tokens.shadow,
       transitionDuration: {
