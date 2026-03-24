@@ -85,18 +85,21 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
       </div>
 
       {/* Dashboard link */}
-      <div className="animate-fade-in-up stagger-3">
-        <div className="rounded-xl border border-border px-4 py-3 text-center">
-          {user ? (
-            <a href="/dashboard" className="text-sm font-medium text-accent hover:underline">
-              弱点分析ダッシュボードを見る
-            </a>
-          ) : (
+      <div className="w-full animate-fade-in-up stagger-3">
+        {user ? (
+          <a
+            href="/dashboard"
+            className="flex w-full items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-sm font-medium text-accent hover:bg-bg-secondary transition-colors"
+          >
+            弱点分析ダッシュボードを見る
+          </a>
+        ) : (
+          <div className="rounded-xl border border-border px-4 py-3 text-center">
             <p className="text-xs text-text-secondary">
               <a href="/api/auth/google" className="text-accent hover:underline">ログイン</a>すると弱点分析が利用できます
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Sticky start button */}
