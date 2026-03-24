@@ -193,74 +193,25 @@ export function SharedResultPage({ id }: { id: string }) {
             {/* ── Phase: view ── */}
             {phase === 'view' && (
               <>
+                {/* Score only — details hidden to avoid spoilers */}
                 <div className="flex items-center gap-3 animate-fade-in-up stagger-1">
                   <ScoreBadge score={data.score} animate={false} />
                   <span className="text-sm text-text-secondary">
-                    {data.score >= 90 ? '素晴らしい！' : data.score >= 70 ? 'よくできました' : data.score >= 50 ? 'もう少し！' : '頑張ろう'}
+                    この問題で {data.score}点 を取りました
                   </span>
                 </div>
 
-                {/* Answer comparison */}
-                <div className="rounded-xl border border-border overflow-hidden animate-fade-in-up stagger-2">
-                  <div className="px-4 py-2 bg-bg-secondary text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    解答比較
-                  </div>
-                  <div className="divide-y divide-border">
-                    <div className="px-4 py-3 flex gap-3">
-                      <span className="shrink-0 mt-0.5 text-xs font-semibold text-text-secondary w-16">解答</span>
-                      <p className="text-sm text-text-primary leading-relaxed">{data.userAnswer}</p>
-                    </div>
-                    <div className="px-4 py-3 flex gap-3 bg-success-bg">
-                      <span className="shrink-0 mt-0.5 text-xs font-semibold text-success w-16">模範解答</span>
-                      <p className="text-sm font-medium leading-relaxed">{data.modelAnswer}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Corrections */}
-                {data.corrections.length > 0 && (
-                  <div className="rounded-xl border border-warning-border overflow-hidden animate-fade-in-up stagger-3">
-                    <div className="px-4 py-2 bg-warning-bg text-xs font-semibold text-warning uppercase tracking-wide">
-                      修正ポイント
-                    </div>
-                    <ul className="divide-y divide-warning-border">
-                      {data.corrections.map((c, i) => (
-                        <li key={i} className="px-4 py-2.5 text-sm text-text-primary flex gap-2">
-                          <span className="text-warning mt-0.5">•</span>
-                          <span>{c}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Feedback */}
-                <div className="rounded-xl border border-accent-border overflow-hidden animate-fade-in-up stagger-4">
-                  <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
-                    フィードバック
-                  </div>
-                  <p className="px-4 py-3 text-sm text-text-primary leading-relaxed">
-                    {data.feedback}
+                <div className="rounded-xl border border-border px-5 py-6 text-center space-y-2 animate-fade-in-up stagger-2">
+                  <p className="text-sm text-text-secondary">
+                    解答と模範解答は挑戦後に確認できます
                   </p>
                 </div>
-
-                {/* Pronunciation Note */}
-                {data.pronunciationNote && (
-                  <div className="rounded-xl border border-accent-border overflow-hidden animate-fade-in-up stagger-5">
-                    <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
-                      発音メモ
-                    </div>
-                    <p className="px-4 py-3 text-sm text-text-primary leading-relaxed">
-                      {data.pronunciationNote}
-                    </p>
-                  </div>
-                )}
 
                 {/* Challenge CTA */}
                 <button
                   onClick={startChallenge}
                   className="block w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-sm
-                    transition-all active:scale-[0.98] animate-fade-in-up stagger-5"
+                    transition-all active:scale-[0.98] animate-fade-in-up stagger-3"
                   style={{ transitionDuration: 'var(--duration-fast)' }}
                 >
                   この問題に挑戦する
@@ -269,7 +220,7 @@ export function SharedResultPage({ id }: { id: string }) {
                 <a
                   href="/"
                   className="block w-full py-3.5 rounded-xl border border-border text-text-primary font-semibold text-sm
-                    transition-colors text-center hover:bg-bg-secondary animate-fade-in-up stagger-6"
+                    transition-colors text-center hover:bg-bg-secondary animate-fade-in-up stagger-4"
                 >
                   自分もトレーニングする
                 </a>
