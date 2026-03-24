@@ -52,7 +52,6 @@ export function DashboardPage() {
   const textColor = getCssVar('--text-secondary')
   const gridColor = getCssVar('--border')
   const accentColor = getCssVar('--accent')
-  const errorColor = getCssVar('--error')
   const tooltipBg = getCssVar('--bg-surface')
 
   return (
@@ -126,15 +125,15 @@ export function DashboardPage() {
 
             {/* Top 3 Weakest */}
             {data.topWeakCategories.length > 0 && (
-              <div className="rounded-xl border border-error overflow-hidden">
-                <div className="px-4 py-2 bg-error-bg text-xs font-semibold text-error uppercase tracking-wide">
+              <div className="rounded-xl border border-accent-border overflow-hidden">
+                <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
                   苦手カテゴリ TOP{data.topWeakCategories.length}
                 </div>
                 <div className="px-4 py-3 flex flex-wrap gap-2">
                   {data.topWeakCategories.map((cat, i) => (
                     <span
                       key={cat}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-error-bg text-error"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-accent-bg text-accent"
                     >
                       <span className="text-xs font-bold">{i + 1}</span>
                       {WEAK_CATEGORY_LABELS[cat as WeakCategory] ?? cat}
@@ -157,7 +156,7 @@ export function DashboardPage() {
                       <XAxis type="number" tick={{ fill: textColor, fontSize: 12 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fill: textColor, fontSize: 12 }} width={60} />
                       <Tooltip contentStyle={{ backgroundColor: tooltipBg, border: 'none', borderRadius: 8 }} />
-                      <Bar dataKey="count" fill={errorColor} radius={[0, 4, 4, 0]} name="回数" />
+                      <Bar dataKey="count" fill={accentColor} radius={[0, 4, 4, 0]} name="回数" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
