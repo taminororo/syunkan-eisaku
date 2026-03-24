@@ -113,7 +113,7 @@ export function SharedResultPage({ id }: { id: string }) {
   }
 
   const shareUrl = shareId ? `${window.location.origin}/share/${shareId}` : ''
-  const shareText = myResult ? `瞬間英作文で${myResult.score}点！\n問題: ${data?.japanese ?? ''}` : ''
+  const shareText = myResult ? `瞬間英作文で${myResult.score}点！\n問題: ${data?.japanese ?? ''}\n` : ''
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`
   const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
 

@@ -25,7 +25,7 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
   const [copied, setCopied] = useState(false)
 
   const shareUrl = shareId ? `${window.location.origin}/share/${shareId}` : ''
-  const shareText = `瞬間英作文で${result.score}点！\n問題: ${japanese}`
+  const shareText = `瞬間英作文で${result.score}点！\n問題: ${japanese}\n`
 
   const handleShare = async () => {
     setSharePhase('loading')
