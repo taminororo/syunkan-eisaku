@@ -7,6 +7,7 @@ interface Env {
 interface RequestBody {
   situation: string
   level: 'beginner' | 'intermediate' | 'advanced'
+  exclude?: string[]
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -30,7 +31,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return jsonResponse({ error: 'リクエストの形式が不正です' }, 400)
   }
 
-  const { situation, level } = body
+  const { situation, level, exclude } = body
   if (!situation || !level) {
     return jsonResponse({ error: '必須パラメータが不足しています' }, 400)
   }
@@ -45,18 +46,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     ? '特定のシチュエーションにとらわれず自由なテーマ'
     : situation
 
+  const excludeSection = exclude && exclude.length > 0
+    ? `\n【過去に出題済みの文（これらと同じ、または非常に似た文は避けてください）】\n${exclude.map(s => `- ${s}`).join('\n')}\n`
+    : ''
+
   const prompt = `あなたは英語学習用の問題作成アシスタントです。
 瞬間英作文トレーニング用の日本語文を1問だけ生成してください。
 
 【シチュエーション】${situationText}
 【難易度】${levelDescriptions[level]}
-
+${excludeSection}
 条件：
 - 自然な日本語で書く
 - 英訳しやすい明確な文にする
 - 難易度に厳密に従う
 - シチュエーションに関連した内容にする
 - 1文のみ（句点「。」または「？」で終わる）
+- 過去に出題済みの文と同じ内容や類似した文は絶対に生成しない
 
 以下のJSON形式のみで回答してください。JSONの前後に余分なテキストを含めないでください：
 {"japanese": "<日本語の問題文>"}`

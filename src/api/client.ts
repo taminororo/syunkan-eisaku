@@ -1,11 +1,11 @@
 import type { Level, FeedbackResult, SharedResult, User, DashboardData } from '../types'
 import type { Situation } from '../constants'
 
-export async function fetchGenerateProblem(situation: Situation, level: Level): Promise<string> {
+export async function fetchGenerateProblem(situation: Situation, level: Level, exclude: string[] = []): Promise<string> {
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ situation, level }),
+    body: JSON.stringify({ situation, level, exclude }),
   })
   const data = await res.json() as { japanese?: string; error?: string }
   if (!res.ok) throw new Error(data.error ?? '問題の生成に失敗しました')

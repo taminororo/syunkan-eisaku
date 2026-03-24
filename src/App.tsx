@@ -28,6 +28,7 @@ export default function App() {
   const [phase, setPhase] = useState<AppPhase>('setup')
   const [questionCount, setQuestionCount] = useState(0)
   const [scores, setScores] = useState<number[]>([])
+  const [askedQuestions, setAskedQuestions] = useState<string[]>([])
 
   // Current problem
   const [currentJapanese, setCurrentJapanese] = useState('')
@@ -63,8 +64,9 @@ export default function App() {
     resetInput()
 
     try {
-      const japanese = await fetchGenerateProblem(sit, lv)
+      const japanese = await fetchGenerateProblem(sit, lv, askedQuestions)
       setCurrentJapanese(japanese)
+      setAskedQuestions(prev => [...prev, japanese])
       setQuestionCount(prev => prev + 1)
       setPhase('question')
     } catch (e) {
@@ -73,7 +75,7 @@ export default function App() {
     } finally {
       setGenerateLoading(false)
     }
-  }, [resetInput])
+  }, [resetInput, askedQuestions])
 
   const startTraining = () => {
     setScores([])
@@ -127,6 +129,7 @@ export default function App() {
     setPhase('setup')
     setScores([])
     setQuestionCount(0)
+    setAskedQuestions([])
   }
 
   const avgScore = scores.length
