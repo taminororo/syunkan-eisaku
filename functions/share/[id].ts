@@ -81,7 +81,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const title = `Flash Compose｜${data.situation}（${levelLabel}）${data.score}点`
   const description = '瞬間英作文に挑戦しました！'
   const origin = new URL(context.request.url).origin
-  const imageUrl = `${origin}/og-image.png`
+  const imageUrl = `${origin}/og-image-v2.png`
 
   return new Response(buildOgpHtml(title, description, context.request.url, imageUrl), {
     headers: { 'Content-Type': 'text/html;charset=utf-8' },
