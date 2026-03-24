@@ -1,0 +1,32 @@
+:root {
+    /* tokens.json と同期させる */
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Noto Sans JP', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  
+    --duration-fast: 150ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  [data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-surface: #0f3460;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0b0;
+    --accent: #e94560;
+    --accent-hover: #ff6b81;
+  }
+  
+  [data-theme="light"] {
+    --bg-primary: #fafaf9;
+    --bg-secondary: #f5f5f0;
+    --bg-surface: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b6b7b;
+    --accent: #e94560;
+    --accent-hover: #d63851;
+  }
