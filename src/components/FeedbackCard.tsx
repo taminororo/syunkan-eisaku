@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { FeedbackResult, Level } from '../types'
+import { WEAK_CATEGORY_LABELS } from '../constants'
+import { useAuth } from '../contexts/AuthContext'
 import { postShare } from '../api/client'
 import { ScoreBadge } from './ScoreBadge'
 
@@ -16,6 +18,7 @@ interface FeedbackCardProps {
 }
 
 export function FeedbackCard({ result, userAnswer, japanese, situation, level, onNext, onEnd }: FeedbackCardProps) {
+  const { user } = useAuth()
   const [sharePhase, setSharePhase] = useState<SharePhase>('idle')
   const [shareId, setShareId] = useState<string | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
@@ -108,6 +111,37 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
           {result.feedback}
         </p>
       </div>
+
+      {/* Weak Categories */}
+      {result.weakCategories && result.weakCategories.length > 0 && (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            弱点カテゴリ
+          </div>
+          <div className="px-4 py-3 flex flex-wrap gap-2">
+            {result.weakCategories.map((wc, i) => (
+              <span
+                key={i}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                  wc.severity === 'major'
+                    ? 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'
+                    : 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400'
+                }`}
+              >
+                {WEAK_CATEGORY_LABELS[wc.category] ?? wc.category}
+                <span className="text-[10px] opacity-70">{wc.severity === 'major' ? 'major' : 'minor'}</span>
+              </span>
+            ))}
+          </div>
+          {!user && (
+            <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                <a href="/api/auth/google" className="text-blue-500 hover:underline">ログイン</a>すると弱点の傾向を分析できます
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pronunciation Note */}
       {result.pronunciationNote && (

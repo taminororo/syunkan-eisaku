@@ -2,6 +2,15 @@ export type Level = 'beginner' | 'intermediate' | 'advanced'
 export type InputTab = 'text' | 'voice'
 export type AppPhase = 'setup' | 'generating' | 'question' | 'feedback'
 
+export type WeakCategory =
+  | 'articles' | 'tense' | 'word_order' | 'prepositions'
+  | 'vocabulary' | 'spelling' | 'plurals' | 'conjunctions'
+
+export interface WeakCategoryEntry {
+  category: WeakCategory
+  severity: 'minor' | 'major'
+}
+
 export interface AnswerRecord {
   id?: number
   japanese: string
@@ -12,6 +21,7 @@ export interface AnswerRecord {
   score: number
   feedback: string
   modelAnswer: string
+  weakCategories?: WeakCategoryEntry[]
   timestamp: Date
 }
 
@@ -21,6 +31,7 @@ export interface FeedbackResult {
   modelAnswer: string
   feedback: string
   pronunciationNote?: string
+  weakCategories?: WeakCategoryEntry[]
 }
 
 export interface SharedResult {
@@ -34,6 +45,29 @@ export interface SharedResult {
   situation: string
   level: Level
   createdAt: string
+}
+
+export interface User {
+  id: string
+  nickname: string
+  avatarUrl: string
+  provider: 'google' | 'github'
+}
+
+export interface HistorySummary {
+  score: number
+  weakCategories: WeakCategoryEntry[]
+  situation: string
+  level: Level
+  timestamp: string
+}
+
+export interface DashboardData {
+  totalAnswers: number
+  averageScore: number
+  categoryCounts: Record<string, number>
+  recentScores: { score: number; timestamp: string }[]
+  topWeakCategories: WeakCategory[]
 }
 
 // ─── Web Speech API ───────────────────────────────────────────────────────────

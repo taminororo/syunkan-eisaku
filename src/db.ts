@@ -8,6 +8,7 @@ class AppDB extends Dexie {
     super('SyunkanEisakuDB')
     this.version(1).stores({ answers: '++id, problemId, timestamp' })
     this.version(2).stores({ answers: '++id, situation, level, timestamp' })
+    this.version(3).stores({ answers: '++id, situation, level, timestamp' })
   }
 }
 

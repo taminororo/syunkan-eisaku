@@ -1,13 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk'
-
-interface Env {
-  ANTHROPIC_API_KEY: string
-}
+import type { Env } from './_env'
+import { getSessionUser } from './_auth'
 
 interface RequestBody {
   japanese: string
   userAnswer: string
   inputMethod: 'text' | 'voice'
+  situation?: string
+  level?: string
+}
+
+interface WeakCategoryEntry {
+  category: string
+  severity: 'minor' | 'major'
 }
 
 interface FeedbackPayload {
@@ -16,6 +21,15 @@ interface FeedbackPayload {
   modelAnswer: string
   feedback: string
   pronunciationNote?: string | null
+  weakCategories?: WeakCategoryEntry[]
+}
+
+interface HistorySummary {
+  score: number
+  weakCategories: WeakCategoryEntry[]
+  situation: string
+  level: string
+  timestamp: string
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -24,6 +38,8 @@ function jsonResponse(body: unknown, status = 200): Response {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+const MAX_HISTORY = 100
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   // ── 入力バリデーション ──────────────────────────────────────────────────
@@ -63,7 +79,8 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
   "corrections": [<修正ポイントの文字列の配列、なければ空配列>],
   "modelAnswer": "<自然で標準的な英語の模範解答>",
   "feedback": "<日本語で100文字程度の総合フィードバック>",
-  "pronunciationNote": ${isVoice ? '"<音声入力の観点から気をつけるべき発音・区切りのコメント（日本語で50文字程度）>"' : 'null'}
+  "pronunciationNote": ${isVoice ? '"<音声入力の観点から気をつけるべき発音・区切りのコメント（日本語で50文字程度）>"' : 'null'},
+  "weakCategories": [<該当する弱点カテゴリの配列。各要素は {"category": "<カテゴリ>", "severity": "<minor|major>"} 形式。カテゴリは articles(冠詞), tense(時制), word_order(語順), prepositions(前置詞), vocabulary(語彙), spelling(スペル), plurals(単複), conjunctions(接続詞) のいずれか。間違いがなければ空配列>]
 }`
 
   // ── Anthropic API 呼び出し ────────────────────────────────────────────
@@ -104,6 +121,27 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
         parsed.pronunciationNote && parsed.pronunciationNote !== 'null'
           ? parsed.pronunciationNote
           : undefined,
+      weakCategories: parsed.weakCategories ?? [],
+    }
+
+    // ── ログインユーザーの場合、履歴をKVに蓄積 ─────────────────────────
+    const user = await getSessionUser(context.request, context.env.RESULTS_KV)
+    if (user) {
+      const historyKey = `user:${user.id}:history`
+      const existing = await context.env.RESULTS_KV.get(historyKey)
+      const history: HistorySummary[] = existing ? JSON.parse(existing) as HistorySummary[] : []
+
+      history.push({
+        score: result.score,
+        weakCategories: result.weakCategories,
+        situation: body.situation ?? '',
+        level: body.level ?? '',
+        timestamp: new Date().toISOString(),
+      })
+
+      // Keep last MAX_HISTORY entries
+      const trimmed = history.slice(-MAX_HISTORY)
+      await context.env.RESULTS_KV.put(historyKey, JSON.stringify(trimmed))
     }
 
     return jsonResponse(result)

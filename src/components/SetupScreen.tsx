@@ -1,5 +1,6 @@
 import type { Level } from '../types'
 import { SITUATIONS, SITUATION_ICONS, LEVELS, type Situation } from '../constants'
+import { useAuth } from '../contexts/AuthContext'
 
 interface SetupScreenProps {
   situation: Situation
@@ -10,6 +11,8 @@ interface SetupScreenProps {
 }
 
 export function SetupScreen({ situation, onSituationChange, level, onLevelChange, onStart }: SetupScreenProps) {
+  const { user } = useAuth()
+
   return (
     <div className="space-y-6 py-2">
       <div className="space-y-3">
@@ -59,6 +62,22 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
       >
         スタート
       </button>
+
+      {/* Dashboard link */}
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
+        {user ? (
+          <a
+            href="/dashboard"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            弱点分析ダッシュボードを見る
+          </a>
+        ) : (
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            <a href="/api/auth/google" className="text-blue-500 hover:underline">ログイン</a>すると弱点分析が利用できます
+          </p>
+        )}
+      </div>
     </div>
   )
 }

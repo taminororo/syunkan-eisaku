@@ -5,15 +5,19 @@ import { db } from './db'
 import { fetchGenerateProblem, fetchFeedback } from './api/client'
 import { useVoiceInput } from './hooks/useVoiceInput'
 import { useDarkMode } from './hooks/useDarkMode'
+import { useAuth } from './contexts/AuthContext'
 import { ChevronLeftIcon, GearIcon, SunIcon, MoonIcon } from './components/Icons'
 import { LevelBadge } from './components/LevelBadge'
 import { FeedbackCard } from './components/FeedbackCard'
 import { VoiceInputPanel } from './components/VoiceInputPanel'
 import { SetupScreen } from './components/SetupScreen'
 import { SettingsModal } from './components/SettingsModal'
+import { LoginButton } from './components/LoginButton'
+import { UserMenu } from './components/UserMenu'
 
 export default function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
+  const { user, isLoading: authLoading } = useAuth()
 
   // Settings
   const [situation, setSituation] = useState<Situation>(SITUATIONS[0])
@@ -92,7 +96,7 @@ export default function App() {
     setError(null)
 
     try {
-      const result = await fetchFeedback(currentJapanese, answer, inputTab)
+      const result = await fetchFeedback(currentJapanese, answer, inputTab, situation, level)
       setSubmittedAnswer(answer)
       setFeedbackResult(result)
       setScores(prev => [...prev, result.score])
@@ -107,6 +111,7 @@ export default function App() {
         score: result.score,
         feedback: result.feedback,
         modelAnswer: result.modelAnswer,
+        weakCategories: result.weakCategories,
         timestamp: new Date(),
       })
     } catch (e) {
@@ -162,6 +167,7 @@ export default function App() {
             >
               {dark ? <SunIcon /> : <MoonIcon />}
             </button>
+            {!authLoading && (user ? <UserMenu /> : <LoginButton />)}
           </div>
         </div>
       </header>
