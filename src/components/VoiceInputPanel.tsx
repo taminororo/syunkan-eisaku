@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 import type { UseVoiceInput } from '../types'
+import { MAX_USER_ANSWER_CHARS } from '../constants'
+import { clampUserAnswer } from '../userAnswerLimits'
+import { UserAnswerHint } from './UserAnswerHint'
 import { MicIcon, StopIcon } from './Icons'
 
 interface VoiceInputPanelProps {
@@ -16,7 +19,7 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
   // Sync finalText → editedText when voice finishes
   useEffect(() => {
     if (voiceState === 'done') {
-      onEditedTextChange(finalText)
+      onEditedTextChange(clampUserAnswer(finalText))
     }
   }, [voiceState, finalText, onEditedTextChange])
 
@@ -48,13 +51,17 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
           </div>
         )}
         {voiceState === 'done' && (
-          <textarea
-            value={editedText}
-            onChange={e => onEditedTextChange(e.target.value)}
-            className="w-full h-full bg-transparent text-text-primary resize-none focus:outline-none text-sm"
-            rows={4}
-            placeholder="認識結果を編集できます"
-          />
+          <>
+            <textarea
+              value={editedText}
+              onChange={e => onEditedTextChange(clampUserAnswer(e.target.value))}
+              className="w-full h-full bg-transparent text-text-primary resize-none focus:outline-none text-sm"
+              rows={4}
+              maxLength={MAX_USER_ANSWER_CHARS}
+              placeholder="認識結果を編集できます"
+            />
+            <UserAnswerHint value={editedText} />
+          </>
         )}
       </div>
 

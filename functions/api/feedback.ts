@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Env } from './_env'
 import { getSessionUser } from './_auth'
+import { validateUserAnswer } from './_userAnswerLimits'
 
 interface RequestBody {
   japanese: string
@@ -54,6 +55,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!japanese || !userAnswer || !inputMethod) {
     return jsonResponse({ error: '必須パラメータが不足しています' }, 400)
   }
+  const validation = validateUserAnswer(userAnswer)
+  if (!validation.ok) {
+    return jsonResponse({ error: validation.error }, 400)
+  }
+
+  const limitCheck = validateUserAnswer(userAnswer)
+  if (!limitCheck.ok) {
+    return jsonResponse({ error: limitCheck.error }, 400)
+  }
+  const answerText = userAnswer.trim()
 
   // ── API キー確認（値はログに出さない）──────────────────────────────────
   const apiKey = context.env.ANTHROPIC_API_KEY
@@ -70,7 +81,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 ${japanese}
 
 【学習者の解答】
-${userAnswer}
+${answerText}
 ${isVoice ? '\n（※この解答は音声入力で取得されました）' : ''}
 
 以下のJSON形式のみで回答してください。JSONの前後に余分なテキストを含めないでください：

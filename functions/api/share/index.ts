@@ -1,3 +1,5 @@
+import { validateUserAnswer } from '../_userAnswerLimits'
+
 interface Env {
   RESULTS_KV: KVNamespace
 }
@@ -42,6 +44,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     !situation || !level
   ) {
     return jsonResponse({ error: '必須パラメータが不足しています' }, 400)
+  }
+
+  const answerLimit = validateUserAnswer(userAnswer)
+  if (!answerLimit.ok) {
+    return jsonResponse({ error: answerLimit.error }, 400)
   }
 
   const id = generateId()

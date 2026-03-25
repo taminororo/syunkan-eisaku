@@ -17,6 +17,9 @@ import { LoginButton } from './components/LoginButton'
 import { UserMenu } from './components/UserMenu'
 import { GradingOverlay } from './components/GradingOverlay'
 import { TypewriterText } from './components/TypewriterText'
+import { UserAnswerHint } from './components/UserAnswerHint'
+import { clampUserAnswer, countWords } from './userAnswerLimits'
+import { MAX_USER_ANSWER_CHARS, MAX_USER_ANSWER_WORDS } from './constants'
 
 export default function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
@@ -98,6 +101,10 @@ export default function App() {
   const submitAnswer = useCallback(async () => {
     const answer = inputTab === 'text' ? textAnswer.trim() : voiceEditedText.trim()
     if (!answer) return
+    if (answer.length > MAX_USER_ANSWER_CHARS || countWords(answer) > MAX_USER_ANSWER_WORDS) {
+      setError(`入力が長すぎます（${MAX_USER_ANSWER_CHARS}文字・${MAX_USER_ANSWER_WORDS}単語以内）`)
+      return
+    }
 
     setLoading(true)
     setGrading(true)
@@ -297,14 +304,16 @@ export default function App() {
                     <div className="space-y-3">
                       <textarea
                         value={textAnswer}
-                        onChange={e => setTextAnswer(e.target.value)}
+                        onChange={e => setTextAnswer(clampUserAnswer(e.target.value))}
                         placeholder="英文を入力してください…"
                         rows={4}
+                        maxLength={MAX_USER_ANSWER_CHARS}
                         className="w-full px-4 py-3 rounded-xl border border-border
                           bg-bg-secondary text-text-primary text-sm
                           resize-none focus:outline-none focus-ring-animate
                           placeholder:text-text-secondary"
                       />
+                      <UserAnswerHint value={textAnswer} />
                       <button
                         onClick={submitAnswer}
                         disabled={!textAnswer.trim() || loading}

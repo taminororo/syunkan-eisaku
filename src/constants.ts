@@ -18,6 +18,10 @@ export const LEVELS: { value: Level; label: string; desc: string }[] = [
   { value: 'advanced', label: '上級', desc: '英検準1〜1級' },
 ]
 
+/** 学習者の英訳解答の上限（API・KV負荷防止） */
+export const MAX_USER_ANSWER_CHARS = 200
+export const MAX_USER_ANSWER_WORDS = 50
+
 export const WEAK_CATEGORY_LABELS: Record<WeakCategory, string> = {
   articles: '冠詞',
   tense: '時制',
