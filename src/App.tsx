@@ -18,6 +18,8 @@ import { LoginButton } from './components/LoginButton'
 import { UserMenu } from './components/UserMenu'
 import { GradingOverlay } from './components/GradingOverlay'
 import { TypewriterText } from './components/TypewriterText'
+import { CharacterMessage } from './components/CharacterMessage'
+import { questionLine } from './character'
 import { UserAnswerHint } from './components/UserAnswerHint'
 import { clampUserAnswer, countWords } from './userAnswerLimits'
 import { MAX_USER_ANSWER_CHARS, MAX_USER_ANSWER_WORDS } from './constants'
@@ -302,6 +304,13 @@ export default function App() {
                     </button>
                   </>
                 ) : null}
+              </div>
+            )}
+
+            {/* Teacher presents the problem */}
+            {phase === 'question' && !grading && (
+              <div className="animate-fade-in-up">
+                <CharacterMessage text={questionLine(questionCount)} />
               </div>
             )}
 
