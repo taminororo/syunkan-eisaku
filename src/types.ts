@@ -90,8 +90,10 @@ export interface ReviewProblem {
 export interface DashboardData {
   totalAnswers: number
   averageScore: number
+  averageElapsedMs: number | null // 計測値が1つもなければ null
   categoryCounts: Record<string, number>
   recentScores: { score: number; timestamp: string }[]
+  recentTimes: { elapsedMs: number; timestamp: string }[]
   topWeakCategories: WeakCategory[]
 }
 
