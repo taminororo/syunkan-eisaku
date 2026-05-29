@@ -92,7 +92,7 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
   "score": <0〜100の整数>,
   "corrections": [<修正ポイントの文字列の配列、なければ空配列>],
   "modelAnswer": "<自然で標準的な英語の模範解答>",
-  "feedback": "<日本語で100文字程度の総合フィードバック>",
+  "feedback": "<やさしく励ます先生口調で、日本語100文字程度の総合フィードバック。まず良かった点を具体的に褒め、次に活かせるアドバイスを1つ温かく添える。学習者を主語にした丁寧な語りかけにする>",
   "pronunciationNote": ${isVoice ? '"<音声入力の観点から気をつけるべき発音・区切りのコメント（日本語で50文字程度）>"' : 'null'},
   "weakCategories": [<該当する弱点カテゴリの配列。各要素は {"category": "<カテゴリ>", "severity": "<minor|major>"} 形式。カテゴリは articles(冠詞), tense(時制), word_order(語順), prepositions(前置詞), vocabulary(語彙), spelling(スペル), plurals(単複), conjunctions(接続詞) のいずれか。間違いがなければ空配列>]
 }`
