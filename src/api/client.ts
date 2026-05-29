@@ -38,6 +38,23 @@ export async function fetchFeedback(
   }
 }
 
+export async function fetchDescribeFeedback(sceneId: string, userAnswer: string): Promise<FeedbackResult> {
+  const res = await fetch('/api/describe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sceneId, userAnswer }),
+  })
+  const data = await res.json() as FeedbackResult & { error?: string }
+  if (!res.ok) throw new Error(data.error ?? '採点に失敗しました')
+  return {
+    score: data.score,
+    corrections: data.corrections ?? [],
+    modelAnswer: data.modelAnswer,
+    feedback: data.feedback,
+    weakCategories: data.weakCategories ?? [],
+  }
+}
+
 export async function postShare(payload: Omit<SharedResult, 'createdAt'>): Promise<string> {
   const res = await fetch('/api/share', {
     method: 'POST',
