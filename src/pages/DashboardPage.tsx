@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { fetchDashboardData } from '../api/client'
 import { formatDuration } from '../speed'
+import { dashboardComment } from '../character'
+import { CharacterMessage } from '../components/CharacterMessage'
 import { SunIcon, MoonIcon } from '../components/Icons'
 import { LoginButton } from '../components/LoginButton'
 import { UserMenu } from '../components/UserMenu'
@@ -119,6 +121,13 @@ export function DashboardPage() {
 
         {data && (
           <>
+            {/* Teacher's comment */}
+            {data.totalAnswers > 0 && (
+              <div className="animate-fade-in-up">
+                <CharacterMessage text={dashboardComment(data)} />
+              </div>
+            )}
+
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-border px-4 py-4 text-center">
