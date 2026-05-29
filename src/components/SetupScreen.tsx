@@ -111,7 +111,7 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
           onClick={onReview}
           className="flex w-full items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
         >
-          🔁 解いた問題を復習する
+          解いた問題を復習する
         </button>
       </div>
 
@@ -121,7 +121,7 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
           href="/describe"
           className="flex w-full items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
         >
-          📷 写真を見て英作文する
+          写真を見て英作文する
         </a>
       </div>
 

@@ -46,7 +46,7 @@ export function NotificationSettings() {
         onClick={() => setOpen(o => !o)}
         className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-text-secondary hover:bg-bg-secondary transition-colors"
       >
-        <span>🔔 サボり防止通知 {registered && <span className="text-success">（設定済み）</span>}</span>
+        <span>サボり防止通知 {registered && <span className="text-success">（設定済み）</span>}</span>
         <span className="text-xs">{open ? '▲' : '▼'}</span>
       </button>
 
