@@ -2,6 +2,21 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // 描画前にテーマを確定し、ページ遷移時の白飛び(FOUC)を防ぐ。
+      // useDarkMode の初期判定と同じロジックにすること。
+      (function () {
+        try {
+          var stored = localStorage.getItem('darkMode')
+          var dark = stored !== null
+            ? stored === 'true'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+          var el = document.documentElement
+          el.classList.toggle('dark', dark)
+          el.dataset.theme = dark ? 'dark' : 'light'
+        } catch (e) {}
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />

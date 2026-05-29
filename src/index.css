@@ -38,6 +38,12 @@
     font-family: var(--font-body);
   }
 
+  /* 文書背景もテーマに追従させ、React描画前の白飛びを防ぐ */
+  html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }
