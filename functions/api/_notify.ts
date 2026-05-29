@@ -44,7 +44,7 @@ export function webhookPayload(provider: WebhookProvider, text: string): Record<
 }
 
 export function buildReminderMessage(): string {
-  return '🔥 今日はまだ瞬間英作文を解いていません！1問だけでもやってみよう。'
+  return '今日はまだ瞬間英作文を解いていません🔥1問だけでもやってみよう。'
 }
 
 /**
