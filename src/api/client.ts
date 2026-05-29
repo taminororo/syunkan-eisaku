@@ -60,6 +60,27 @@ export async function postLogout(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST' })
 }
 
+export async function fetchWebhook(): Promise<string | null> {
+  const res = await fetch('/api/webhook')
+  if (!res.ok) return null
+  const data = await res.json() as { url: string | null }
+  return data.url
+}
+
+export async function saveWebhook(url: string): Promise<void> {
+  const res = await fetch('/api/webhook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  })
+  const data = await res.json() as { error?: string }
+  if (!res.ok) throw new Error(data.error ?? '通知設定の保存に失敗しました')
+}
+
+export async function deleteWebhook(): Promise<void> {
+  await fetch('/api/webhook', { method: 'DELETE' })
+}
+
 export async function fetchReviewList(): Promise<ReviewItem[]> {
   const res = await fetch('/api/review')
   const data = await res.json() as { items?: ReviewItem[]; error?: string }
