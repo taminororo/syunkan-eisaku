@@ -1,0 +1,19 @@
+name: daily-inactivity-notify
+
+on:
+  schedule:
+    # GitHub Actions の cron は UTC。0:00 UTC = 09:00 JST
+    - cron: '0 0 * * *'
+  workflow_dispatch: {} # 手動実行でテストできるように
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping notify endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # 本番URL。カスタムドメインがあれば Variables の NOTIFY_URL で上書き
+          NOTIFY_URL: ${{ vars.NOTIFY_URL || 'https://syunkan-eisaku.pages.dev/api/cron/notify' }}
+        run: |
+          curl -fsS -X POST "$NOTIFY_URL" -H "X-Cron-Secret: $CRON_SECRET"
