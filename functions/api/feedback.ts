@@ -26,6 +26,7 @@ interface FeedbackPayload {
 }
 
 interface HistorySummary {
+  japanese: string
   score: number
   weakCategories: WeakCategoryEntry[]
   situation: string
@@ -143,6 +144,7 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
       const history: HistorySummary[] = existing ? JSON.parse(existing) as HistorySummary[] : []
 
       history.push({
+        japanese,
         score: result.score,
         weakCategories: result.weakCategories,
         situation: body.situation ?? '',
