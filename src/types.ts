@@ -1,6 +1,6 @@
 export type Level = 'beginner' | 'intermediate' | 'advanced'
 export type InputTab = 'text' | 'voice'
-export type AppPhase = 'setup' | 'generating' | 'question' | 'feedback'
+export type AppPhase = 'setup' | 'review' | 'generating' | 'question' | 'feedback'
 
 export type WeakCategory =
   | 'articles' | 'tense' | 'word_order' | 'prepositions'
@@ -60,6 +60,28 @@ export interface HistorySummary {
   situation: string
   level: Level
   timestamp: string
+}
+
+// /api/review が返す「1回分」の生の記録
+export interface ReviewItem {
+  japanese: string
+  score: number
+  situation: string
+  level: Level
+  timestamp: string
+}
+
+// 問題ごとにまとめた解答履歴（スコア推移の表示に使う）
+export interface ReviewAttempt {
+  score: number
+  timestamp: string
+}
+
+export interface ReviewProblem {
+  japanese: string
+  situation: string
+  level: Level
+  attempts: ReviewAttempt[] // 古い順（推移をそのまま左→右で描ける）
 }
 
 export interface DashboardData {

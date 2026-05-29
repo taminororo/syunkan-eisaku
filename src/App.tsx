@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Level, FeedbackResult, InputTab, AppPhase } from './types'
+import type { Level, FeedbackResult, InputTab, AppPhase, ReviewProblem } from './types'
 import { SITUATIONS, type Situation } from './constants'
 import { SituationIcon } from './components/SituationIcon'
 import { db } from './db'
@@ -12,6 +12,7 @@ import { LevelBadge } from './components/LevelBadge'
 import { FeedbackCard } from './components/FeedbackCard'
 import { VoiceInputPanel } from './components/VoiceInputPanel'
 import { SetupScreen } from './components/SetupScreen'
+import { ReviewListScreen } from './components/ReviewListScreen'
 import { SettingsModal } from './components/SettingsModal'
 import { LoginButton } from './components/LoginButton'
 import { UserMenu } from './components/UserMenu'
@@ -35,6 +36,9 @@ export default function App() {
   const [questionCount, setQuestionCount] = useState(0)
   const [scores, setScores] = useState<number[]>([])
   const [askedQuestions, setAskedQuestions] = useState<string[]>([])
+
+  // Review mode: 解き直しのとき、前回スコアを保持して比較表示する（通常出題時は null）
+  const [reviewPreviousScore, setReviewPreviousScore] = useState<number | null>(null)
 
   // Current problem
   const [currentJapanese, setCurrentJapanese] = useState('')
@@ -86,9 +90,23 @@ export default function App() {
   }, [resetInput, askedQuestions])
 
   const startTraining = () => {
+    setReviewPreviousScore(null)
     setScores([])
     setQuestionCount(0)
     generateProblem(situation, level)
+  }
+
+  // 復習: 保存済みの問題文をそのまま出題画面に流し込む（生成はスキップ）
+  const startReview = (problem: ReviewProblem) => {
+    const latest = problem.attempts[problem.attempts.length - 1]
+    setSituation(problem.situation as Situation)
+    setLevel(problem.level)
+    setReviewPreviousScore(latest ? latest.score : null)
+    setScores([])
+    setQuestionCount(1)
+    resetInput()
+    setCurrentJapanese(problem.japanese)
+    setPhase('question')
   }
 
   const applySettings = (newSituation: Situation, newLevel: Level) => {
@@ -138,10 +156,19 @@ export default function App() {
     }
   }, [inputTab, textAnswer, voiceEditedText, currentJapanese, situation, level])
 
-  const goNext = () => generateProblem(situation, level)
+  const goNext = () => {
+    // 復習中は次の問題を生成せず、リストに戻って別の問題を選んでもらう
+    if (reviewPreviousScore !== null) {
+      setReviewPreviousScore(null)
+      setPhase('review')
+      return
+    }
+    generateProblem(situation, level)
+  }
 
   const endSession = () => {
     setPhase('setup')
+    setReviewPreviousScore(null)
     setScores([])
     setQuestionCount(0)
     setAskedQuestions([])
@@ -204,13 +231,24 @@ export default function App() {
       <main className="max-w-xl mx-auto px-4 py-6 space-y-6">
 
         {phase === 'setup' ? (
-          <SetupScreen
-            situation={situation}
-            onSituationChange={setSituation}
-            level={level}
-            onLevelChange={setLevel}
-            onStart={startTraining}
-          />
+          <>
+            <SetupScreen
+              situation={situation}
+              onSituationChange={setSituation}
+              level={level}
+              onLevelChange={setLevel}
+              onStart={startTraining}
+            />
+            <button
+              onClick={() => setPhase('review')}
+              className="w-full py-3 rounded-xl border border-border text-text-secondary
+                hover:text-text-primary hover:bg-bg-secondary text-sm font-medium transition-colors"
+            >
+              🔁 解いた問題を復習する
+            </button>
+          </>
+        ) : phase === 'review' ? (
+          <ReviewListScreen onSelect={startReview} />
         ) : (
           <>
             {/* Session info bar */}
@@ -339,6 +377,21 @@ export default function App() {
                   <div className="rounded-xl border border-error bg-error-bg px-4 py-3 mt-3 animate-fade-in">
                     <p className="text-sm text-error">{error}</p>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Review: 前回スコアとの比較 */}
+            {phase === 'feedback' && feedbackResult && reviewPreviousScore !== null && (
+              <div className="rounded-xl border border-border bg-bg-secondary px-5 py-4 flex items-center justify-center gap-4 animate-fade-in">
+                <span className="text-sm text-text-secondary">前回 {reviewPreviousScore}点</span>
+                <span className="text-text-secondary">→</span>
+                <span className="text-sm font-semibold text-text-primary">今回 {feedbackResult.score}点</span>
+                {feedbackResult.score > reviewPreviousScore && (
+                  <span className="text-sm font-semibold text-success">↑ +{feedbackResult.score - reviewPreviousScore}</span>
+                )}
+                {feedbackResult.score < reviewPreviousScore && (
+                  <span className="text-sm font-semibold text-error">↓ {feedbackResult.score - reviewPreviousScore}</span>
                 )}
               </div>
             )}

@@ -1,4 +1,4 @@
-import type { Level, FeedbackResult, SharedResult, User, DashboardData } from '../types'
+import type { Level, FeedbackResult, SharedResult, User, DashboardData, ReviewItem } from '../types'
 import type { Situation } from '../constants'
 
 export async function fetchGenerateProblem(situation: Situation, level: Level, exclude: string[] = []): Promise<string> {
@@ -57,6 +57,13 @@ export async function fetchMe(): Promise<User | null> {
 
 export async function postLogout(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST' })
+}
+
+export async function fetchReviewList(): Promise<ReviewItem[]> {
+  const res = await fetch('/api/review')
+  const data = await res.json() as { items?: ReviewItem[]; error?: string }
+  if (!res.ok) throw new Error(data.error ?? '復習リストの取得に失敗しました')
+  return data.items ?? []
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
