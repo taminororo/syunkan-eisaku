@@ -9,6 +9,7 @@ interface WeakCategoryEntry {
 interface HistorySummary {
   japanese?: string
   score: number
+  elapsedMs?: number
   weakCategories: WeakCategoryEntry[]
   situation: string
   level: string
@@ -39,6 +40,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     .map(h => ({
       japanese: h.japanese,
       score: h.score,
+      elapsedMs: h.elapsedMs,
       situation: h.situation,
       level: h.level,
       timestamp: h.timestamp,

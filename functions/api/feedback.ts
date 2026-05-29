@@ -9,6 +9,7 @@ interface RequestBody {
   inputMethod: 'text' | 'voice'
   situation?: string
   level?: string
+  elapsedMs?: number
 }
 
 interface WeakCategoryEntry {
@@ -28,6 +29,7 @@ interface FeedbackPayload {
 interface HistorySummary {
   japanese: string
   score: number
+  elapsedMs?: number
   weakCategories: WeakCategoryEntry[]
   situation: string
   level: string
@@ -146,6 +148,7 @@ ${isVoice ? '\n（※この解答は音声入力で取得されました）' : '
       history.push({
         japanese,
         score: result.score,
+        elapsedMs: typeof body.elapsedMs === 'number' ? body.elapsedMs : undefined,
         weakCategories: result.weakCategories,
         situation: body.situation ?? '',
         level: body.level ?? '',
