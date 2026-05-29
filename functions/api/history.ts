@@ -8,6 +8,7 @@ interface WeakCategoryEntry {
 
 interface HistorySummary {
   score: number
+  elapsedMs?: number
   weakCategories: WeakCategoryEntry[]
   situation: string
   level: string
@@ -50,6 +51,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     timestamp: h.timestamp,
   }))
 
+  // Speed (elapsedMs) — 計測値があるエントリのみ集計
+  const timed = history.filter(
+    (h): h is HistorySummary & { elapsedMs: number } => typeof h.elapsedMs === 'number',
+  )
+  const averageElapsedMs = timed.length > 0
+    ? Math.round(timed.reduce((sum, h) => sum + h.elapsedMs, 0) / timed.length)
+    : null
+  const recentTimes = timed.slice(-10).map(h => ({
+    elapsedMs: h.elapsedMs,
+    timestamp: h.timestamp,
+  }))
+
   // Top 3 weakest categories
   const sorted = Object.entries(categoryCounts)
     .sort((a, b) => b[1] - a[1])
@@ -59,8 +72,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   return jsonResponse({
     totalAnswers,
     averageScore,
+    averageElapsedMs,
     categoryCounts,
     recentScores,
+    recentTimes,
     topWeakCategories: sorted,
   })
 }
