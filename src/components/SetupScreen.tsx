@@ -115,6 +115,16 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
         </button>
       </div>
 
+      {/* Scene description mode entry */}
+      <div className="w-full animate-fade-in-up stagger-3">
+        <a
+          href="/describe"
+          className="flex w-full items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
+        >
+          📷 写真を見て英作文する
+        </a>
+      </div>
+
       {/* Notification settings (logged-in only) */}
       {user && (
         <div className="w-full animate-fade-in-up stagger-3">
