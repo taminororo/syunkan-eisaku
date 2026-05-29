@@ -6,9 +6,11 @@ import App from './App'
 
 const SharedResultPage = lazy(() => import('./pages/SharedResultPage').then(m => ({ default: m.SharedResultPage })))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
+const DescribePage = lazy(() => import('./pages/DescribePage').then(m => ({ default: m.DescribePage })))
 
 const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/)
 const isDashboard = window.location.pathname === '/dashboard'
+const isDescribe = window.location.pathname === '/describe'
 
 function Fallback() {
   return (
@@ -21,6 +23,7 @@ function Fallback() {
 function Root() {
   if (shareMatch) return <Suspense fallback={<Fallback />}><SharedResultPage id={shareMatch[1]} /></Suspense>
   if (isDashboard) return <Suspense fallback={<Fallback />}><DashboardPage /></Suspense>
+  if (isDescribe) return <Suspense fallback={<Fallback />}><DescribePage /></Suspense>
   return <App />
 }
 
