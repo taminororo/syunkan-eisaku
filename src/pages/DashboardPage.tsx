@@ -8,6 +8,7 @@ import { WEAK_CATEGORY_LABELS } from '../constants'
 import { useAuth } from '../contexts/AuthContext'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { fetchDashboardData } from '../api/client'
+import { formatDuration } from '../speed'
 import { SunIcon, MoonIcon } from '../components/Icons'
 import { LoginButton } from '../components/LoginButton'
 import { UserMenu } from '../components/UserMenu'
@@ -46,6 +47,13 @@ export function DashboardPage() {
     ? data.recentScores.map((s, i) => ({
         label: `${i + 1}`,
         score: s.score,
+      }))
+    : []
+
+  const timeData = data
+    ? data.recentTimes.map((t, i) => ({
+        label: `${i + 1}`,
+        seconds: Math.round(t.elapsedMs / 100) / 10, // 0.1秒単位
       }))
     : []
 
@@ -121,6 +129,12 @@ export function DashboardPage() {
                 <p className="text-2xl font-bold font-display">{data.averageScore}<span className="text-sm font-normal">点</span></p>
                 <p className="text-xs text-text-secondary mt-1">平均スコア</p>
               </div>
+              {data.averageElapsedMs !== null && (
+                <div className="rounded-xl border border-border px-4 py-4 text-center col-span-2">
+                  <p className="text-2xl font-bold font-display">{formatDuration(data.averageElapsedMs)}</p>
+                  <p className="text-xs text-text-secondary mt-1">平均回答時間</p>
+                </div>
+              )}
             </div>
 
             {/* Top 3 Weakest */}
@@ -177,6 +191,26 @@ export function DashboardPage() {
                       <YAxis domain={[0, 100]} tick={{ fill: textColor, fontSize: 12 }} />
                       <Tooltip contentStyle={{ backgroundColor: tooltipBg, border: 'none', borderRadius: 8 }} />
                       <Line type="monotone" dataKey="score" stroke={accentColor} strokeWidth={2} dot={{ fill: accentColor, r: 4 }} name="スコア" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* Line Chart: Speed Trend */}
+            {timeData.length > 1 && (
+              <div className="rounded-xl border border-border overflow-hidden">
+                <div className="px-4 py-2 bg-bg-secondary text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                  直近{timeData.length}回の速度推移（秒・短いほど速い）
+                </div>
+                <div className="px-2 py-4">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={timeData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                      <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 12 }} />
+                      <YAxis tick={{ fill: textColor, fontSize: 12 }} allowDecimals />
+                      <Tooltip contentStyle={{ backgroundColor: tooltipBg, border: 'none', borderRadius: 8 }} />
+                      <Line type="monotone" dataKey="seconds" stroke={accentColor} strokeWidth={2} dot={{ fill: accentColor, r: 4 }} name="秒" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
