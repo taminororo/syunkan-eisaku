@@ -4,6 +4,7 @@ import { WEAK_CATEGORY_LABELS } from '../constants'
 import { useAuth } from '../contexts/AuthContext'
 import { postShare } from '../api/client'
 import { ScoreBadge } from './ScoreBadge'
+import { CharacterMessage } from './CharacterMessage'
 import { formatDuration } from '../speed'
 
 type SharePhase = 'idle' | 'loading' | 'ready' | 'error'
@@ -110,14 +111,9 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, e
         </div>
       )}
 
-      {/* Feedback — staggered */}
-      <div className="rounded-xl border border-accent-border overflow-hidden animate-fade-in-up stagger-4">
-        <div className="px-4 py-2 bg-accent-bg text-xs font-semibold text-accent uppercase tracking-wide">
-          フィードバック
-        </div>
-        <p className="px-4 py-3 text-sm text-text-primary leading-relaxed">
-          {result.feedback}
-        </p>
+      {/* Feedback from the teacher character — staggered */}
+      <div className="animate-fade-in-up stagger-4">
+        <CharacterMessage text={result.feedback} />
       </div>
 
       {/* Weak Categories — staggered */}
