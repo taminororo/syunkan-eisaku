@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Level } from '../types'
 import { SITUATIONS, LEVELS, type Situation } from '../constants'
 import { SituationIcon } from './SituationIcon'
+import { NotificationSettings } from './NotificationSettings'
 import { useAuth } from '../contexts/AuthContext'
 
 interface SetupScreenProps {
@@ -113,6 +114,13 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
           🔁 解いた問題を復習する
         </button>
       </div>
+
+      {/* Notification settings (logged-in only) */}
+      {user && (
+        <div className="w-full animate-fade-in-up stagger-3">
+          <NotificationSettings />
+        </div>
+      )}
 
       {/* Sticky start button */}
       <div className="fixed bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-bg-primary via-bg-primary to-transparent">
