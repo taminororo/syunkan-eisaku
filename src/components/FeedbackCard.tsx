@@ -4,6 +4,7 @@ import { WEAK_CATEGORY_LABELS } from '../constants'
 import { useAuth } from '../contexts/AuthContext'
 import { postShare } from '../api/client'
 import { ScoreBadge } from './ScoreBadge'
+import { formatDuration } from '../speed'
 
 type SharePhase = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -13,11 +14,12 @@ interface FeedbackCardProps {
   japanese: string
   situation: string
   level: Level
+  elapsedMs?: number
   onNext: () => void
   onEnd: () => void
 }
 
-export function FeedbackCard({ result, userAnswer, japanese, situation, level, onNext, onEnd }: FeedbackCardProps) {
+export function FeedbackCard({ result, userAnswer, japanese, situation, level, elapsedMs, onNext, onEnd }: FeedbackCardProps) {
   const { user } = useAuth()
   const [sharePhase, setSharePhase] = useState<SharePhase>('idle')
   const [shareId, setShareId] = useState<string | null>(null)
@@ -67,6 +69,11 @@ export function FeedbackCard({ result, userAnswer, japanese, situation, level, o
         <span className="text-sm text-text-secondary">
           {result.score >= 90 ? '素晴らしい！' : result.score >= 70 ? 'よくできました' : result.score >= 50 ? 'もう少し！' : '頑張ろう'}
         </span>
+        {typeof elapsedMs === 'number' && (
+          <span className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-text-secondary tabular-nums">
+            ⏱ {formatDuration(elapsedMs)}
+          </span>
+        )}
       </div>
 
       {/* Answer Comparison — staggered */}

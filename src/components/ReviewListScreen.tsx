@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReviewItem, ReviewProblem } from '../types'
 import { fetchReviewList } from '../api/client'
+import { formatDuration } from '../speed'
 import { SituationIcon } from './SituationIcon'
 import { LevelBadge } from './LevelBadge'
 
@@ -26,15 +27,16 @@ function groupReviewItems(items: ReviewItem[]): ReviewProblem[] {
 
   // items は新しい順。先頭に積めば attempts は古い順になる。
   for (const item of items) {
+    const attempt = { score: item.score, elapsedMs: item.elapsedMs, timestamp: item.timestamp }
     const existing = byProblem.get(item.japanese)
     if (existing) {
-      existing.attempts.unshift({ score: item.score, timestamp: item.timestamp })
+      existing.attempts.unshift(attempt)
     } else {
       byProblem.set(item.japanese, {
         japanese: item.japanese,
         situation: item.situation,
         level: item.level,
-        attempts: [{ score: item.score, timestamp: item.timestamp }],
+        attempts: [attempt],
       })
     }
   }
@@ -57,6 +59,23 @@ function ScoreTrend({ attempts }: { attempts: ReviewProblem['attempts'] }) {
         <span key={i} className="inline-flex items-center gap-1.5">
           {i > 0 && <span className="text-text-secondary text-xs">→</span>}
           <span className={`font-semibold text-sm ${scoreColor(a.score)}`}>{a.score}</span>
+        </span>
+      ))}
+    </span>
+  )
+}
+
+// 各回の所要時間を「12.3秒 → 8.1秒」のように推移表示する（計測値がある回のみ）
+function SpeedTrend({ attempts }: { attempts: ReviewProblem['attempts'] }) {
+  const timed = attempts.filter(a => typeof a.elapsedMs === 'number')
+  if (timed.length === 0) return null
+  return (
+    <span className="inline-flex items-center gap-1 flex-wrap text-text-secondary">
+      <span className="text-xs">⏱</span>
+      {timed.map((a, i) => (
+        <span key={i} className="inline-flex items-center gap-1">
+          {i > 0 && <span className="text-xs">→</span>}
+          <span className="text-xs tabular-nums">{formatDuration(a.elapsedMs as number)}</span>
         </span>
       ))}
     </span>
@@ -132,6 +151,9 @@ export function ReviewListScreen({ onSelect }: Props) {
                   )}
                   <ScoreTrend attempts={problem.attempts} />
                 </span>
+              </div>
+              <div className="mt-1.5 flex justify-end">
+                <SpeedTrend attempts={problem.attempts} />
               </div>
             </button>
           </li>

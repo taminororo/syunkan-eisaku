@@ -19,11 +19,12 @@ export async function fetchFeedback(
   inputMethod: 'text' | 'voice',
   situation?: string,
   level?: string,
+  elapsedMs?: number,
 ): Promise<FeedbackResult> {
   const res = await fetch('/api/feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ japanese, userAnswer, inputMethod, situation, level }),
+    body: JSON.stringify({ japanese, userAnswer, inputMethod, situation, level, elapsedMs }),
   })
   const data = await res.json() as FeedbackResult & { error?: string }
   if (!res.ok) throw new Error(data.error ?? '添削に失敗しました')

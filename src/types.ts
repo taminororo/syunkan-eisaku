@@ -22,6 +22,7 @@ export interface AnswerRecord {
   feedback: string
   modelAnswer: string
   weakCategories?: WeakCategoryEntry[]
+  elapsedMs?: number // 問題表示から送信までの所要時間
   timestamp: Date
 }
 
@@ -66,6 +67,7 @@ export interface HistorySummary {
 export interface ReviewItem {
   japanese: string
   score: number
+  elapsedMs?: number
   situation: string
   level: Level
   timestamp: string
@@ -74,6 +76,7 @@ export interface ReviewItem {
 // 問題ごとにまとめた解答履歴（スコア推移の表示に使う）
 export interface ReviewAttempt {
   score: number
+  elapsedMs?: number
   timestamp: string
 }
 

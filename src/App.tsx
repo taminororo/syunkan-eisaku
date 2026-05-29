@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Level, FeedbackResult, InputTab, AppPhase, ReviewProblem } from './types'
 import { SITUATIONS, type Situation } from './constants'
 import { SituationIcon } from './components/SituationIcon'
@@ -21,6 +21,7 @@ import { TypewriterText } from './components/TypewriterText'
 import { UserAnswerHint } from './components/UserAnswerHint'
 import { clampUserAnswer, countWords } from './userAnswerLimits'
 import { MAX_USER_ANSWER_CHARS, MAX_USER_ANSWER_WORDS } from './constants'
+import { formatDuration, speedComparisonMessage } from './speed'
 
 export default function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
@@ -37,8 +38,13 @@ export default function App() {
   const [scores, setScores] = useState<number[]>([])
   const [askedQuestions, setAskedQuestions] = useState<string[]>([])
 
-  // Review mode: 解き直しのとき、前回スコアを保持して比較表示する（通常出題時は null）
+  // Review mode: 解き直しのとき、前回スコア/速度を保持して比較表示する（通常出題時は null）
   const [reviewPreviousScore, setReviewPreviousScore] = useState<number | null>(null)
+  const [reviewPreviousElapsedMs, setReviewPreviousElapsedMs] = useState<number | null>(null)
+
+  // 速度計測: 問題が表示された時刻。送信時にここからの経過を所要時間とする
+  const questionStartRef = useRef<number | null>(null)
+  const [lastElapsedMs, setLastElapsedMs] = useState<number | null>(null)
 
   // Current problem
   const [currentJapanese, setCurrentJapanese] = useState('')
@@ -60,6 +66,13 @@ export default function App() {
   const [grading, setGrading] = useState(false)
 
   const voice = useVoiceInput()
+
+  // 問題が表示されたら計測開始。同じ問題でもタイプ演出時間は一定なので比較では相殺される
+  useEffect(() => {
+    if (phase === 'question') {
+      questionStartRef.current = Date.now()
+    }
+  }, [phase, currentJapanese])
 
   const resetInput = useCallback(() => {
     setTextAnswer('')
@@ -91,6 +104,7 @@ export default function App() {
 
   const startTraining = () => {
     setReviewPreviousScore(null)
+    setReviewPreviousElapsedMs(null)
     setScores([])
     setQuestionCount(0)
     generateProblem(situation, level)
@@ -102,6 +116,7 @@ export default function App() {
     setSituation(problem.situation as Situation)
     setLevel(problem.level)
     setReviewPreviousScore(latest ? latest.score : null)
+    setReviewPreviousElapsedMs(latest?.elapsedMs ?? null)
     setScores([])
     setQuestionCount(1)
     resetInput()
@@ -124,15 +139,21 @@ export default function App() {
       return
     }
 
+    // 問題表示からの経過時間を確定（タイマー未設定なら計測なし）
+    const elapsedMs = questionStartRef.current !== null
+      ? Date.now() - questionStartRef.current
+      : undefined
+
     setLoading(true)
     setGrading(true)
     setError(null)
 
     try {
-      const result = await fetchFeedback(currentJapanese, answer, inputTab, situation, level)
+      const result = await fetchFeedback(currentJapanese, answer, inputTab, situation, level, elapsedMs)
       setSubmittedAnswer(answer)
       setFeedbackResult(result)
       setScores(prev => [...prev, result.score])
+      setLastElapsedMs(elapsedMs ?? null)
       setGrading(false)
       setPhase('feedback')
 
@@ -146,6 +167,7 @@ export default function App() {
         feedback: result.feedback,
         modelAnswer: result.modelAnswer,
         weakCategories: result.weakCategories,
+        elapsedMs,
         timestamp: new Date(),
       })
     } catch (e) {
@@ -160,6 +182,7 @@ export default function App() {
     // 復習中は次の問題を生成せず、リストに戻って別の問題を選んでもらう
     if (reviewPreviousScore !== null) {
       setReviewPreviousScore(null)
+      setReviewPreviousElapsedMs(null)
       setPhase('review')
       return
     }
@@ -169,6 +192,7 @@ export default function App() {
   const endSession = () => {
     setPhase('setup')
     setReviewPreviousScore(null)
+    setReviewPreviousElapsedMs(null)
     setScores([])
     setQuestionCount(0)
     setAskedQuestions([])
@@ -231,22 +255,14 @@ export default function App() {
       <main className="max-w-xl mx-auto px-4 py-6 space-y-6">
 
         {phase === 'setup' ? (
-          <>
-            <SetupScreen
-              situation={situation}
-              onSituationChange={setSituation}
-              level={level}
-              onLevelChange={setLevel}
-              onStart={startTraining}
-            />
-            <button
-              onClick={() => setPhase('review')}
-              className="w-full py-3 rounded-xl border border-border text-text-secondary
-                hover:text-text-primary hover:bg-bg-secondary text-sm font-medium transition-colors"
-            >
-              🔁 解いた問題を復習する
-            </button>
-          </>
+          <SetupScreen
+            situation={situation}
+            onSituationChange={setSituation}
+            level={level}
+            onLevelChange={setLevel}
+            onStart={startTraining}
+            onReview={() => setPhase('review')}
+          />
         ) : phase === 'review' ? (
           <ReviewListScreen onSelect={startReview} />
         ) : (
@@ -381,17 +397,29 @@ export default function App() {
               </div>
             )}
 
-            {/* Review: 前回スコアとの比較 */}
+            {/* Review: 前回スコア・速度との比較 */}
             {phase === 'feedback' && feedbackResult && reviewPreviousScore !== null && (
-              <div className="rounded-xl border border-border bg-bg-secondary px-5 py-4 flex items-center justify-center gap-4 animate-fade-in">
-                <span className="text-sm text-text-secondary">前回 {reviewPreviousScore}点</span>
-                <span className="text-text-secondary">→</span>
-                <span className="text-sm font-semibold text-text-primary">今回 {feedbackResult.score}点</span>
-                {feedbackResult.score > reviewPreviousScore && (
-                  <span className="text-sm font-semibold text-success">↑ +{feedbackResult.score - reviewPreviousScore}</span>
-                )}
-                {feedbackResult.score < reviewPreviousScore && (
-                  <span className="text-sm font-semibold text-error">↓ {feedbackResult.score - reviewPreviousScore}</span>
+              <div className="rounded-xl border border-border bg-bg-secondary px-5 py-4 flex flex-col items-center gap-2 animate-fade-in">
+                <div className="flex items-center justify-center gap-4">
+                  <span className="text-sm text-text-secondary">前回 {reviewPreviousScore}点</span>
+                  <span className="text-text-secondary">→</span>
+                  <span className="text-sm font-semibold text-text-primary">今回 {feedbackResult.score}点</span>
+                  {feedbackResult.score > reviewPreviousScore && (
+                    <span className="text-sm font-semibold text-success">↑ +{feedbackResult.score - reviewPreviousScore}</span>
+                  )}
+                  {feedbackResult.score < reviewPreviousScore && (
+                    <span className="text-sm font-semibold text-error">↓ {feedbackResult.score - reviewPreviousScore}</span>
+                  )}
+                </div>
+                {reviewPreviousElapsedMs !== null && lastElapsedMs !== null && (
+                  <div className="flex items-center justify-center gap-3 text-text-secondary">
+                    <span className="text-xs">⏱ {formatDuration(reviewPreviousElapsedMs)} → {formatDuration(lastElapsedMs)}</span>
+                    {speedComparisonMessage(reviewPreviousElapsedMs, lastElapsedMs) && (
+                      <span className="text-xs font-semibold text-accent">
+                        {speedComparisonMessage(reviewPreviousElapsedMs, lastElapsedMs)}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -404,6 +432,7 @@ export default function App() {
                 japanese={currentJapanese}
                 situation={situation}
                 level={level}
+                elapsedMs={lastElapsedMs ?? undefined}
                 onNext={goNext}
                 onEnd={endSession}
               />

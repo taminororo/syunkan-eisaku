@@ -10,9 +10,10 @@ interface SetupScreenProps {
   level: Level
   onLevelChange: (l: Level) => void
   onStart: () => void
+  onReview: () => void
 }
 
-export function SetupScreen({ situation, onSituationChange, level, onLevelChange, onStart }: SetupScreenProps) {
+export function SetupScreen({ situation, onSituationChange, level, onLevelChange, onStart, onReview }: SetupScreenProps) {
   const { user } = useAuth()
   const [selectedDesc, setSelectedDesc] = useState<string>(
     LEVELS.find(l => l.value === level)?.desc ?? ''
@@ -101,6 +102,16 @@ export function SetupScreen({ situation, onSituationChange, level, onLevelChange
             </p>
           </div>
         )}
+      </div>
+
+      {/* Review entry */}
+      <div className="w-full animate-fade-in-up stagger-3">
+        <button
+          onClick={onReview}
+          className="flex w-full items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
+        >
+          🔁 解いた問題を復習する
+        </button>
       </div>
 
       {/* Sticky start button */}
