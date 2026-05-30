@@ -7,6 +7,7 @@ export const SITUATIONS = [
   'レストラン・買い物',
   '学校・大学',
   'ニュース・時事',
+  'IT・テクノロジー',
   '自由テーマ',
 ] as const
 
