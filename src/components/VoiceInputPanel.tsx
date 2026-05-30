@@ -14,7 +14,7 @@ interface VoiceInputPanelProps {
 }
 
 export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmit, loading }: VoiceInputPanelProps) {
-  const { supported, voiceState, interimText, finalText, start, stop, reset } = voice
+  const { supported, voiceState, finalText, error, start, stop, reset } = voice
 
   // Sync finalText → editedText when voice finishes
   useEffect(() => {
@@ -39,15 +39,15 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
           <span className="text-text-secondary">マイクボタンで録音を開始してください</span>
         )}
         {voiceState === 'recording' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-error animate-pulse" />
-              <span className="text-xs text-error font-medium">録音中…</span>
-            </div>
-            <p className="text-text-primary">{finalText}</p>
-            {interimText && (
-              <p className="text-text-secondary italic">{interimText}</p>
-            )}
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-error animate-pulse" />
+            <span className="text-xs text-error font-medium">録音中…</span>
+          </div>
+        )}
+        {voiceState === 'transcribing' && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-accent animate-pulse" />
+            <span className="text-xs text-accent font-medium">変換中…</span>
           </div>
         )}
         {voiceState === 'done' && (
@@ -64,6 +64,10 @@ export function VoiceInputPanel({ voice, editedText, onEditedTextChange, onSubmi
           </>
         )}
       </div>
+
+      {error && (
+        <p className="text-xs text-error">{error}</p>
+      )}
 
       {/* Controls */}
       <div className="flex gap-2">
