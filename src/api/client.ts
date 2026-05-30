@@ -67,6 +67,15 @@ export async function postShare(payload: Omit<SharedResult, 'createdAt'>): Promi
   return data.id
 }
 
+export async function transcribeAudio(blob: Blob): Promise<string> {
+  const form = new FormData()
+  form.append('file', blob, 'audio.webm')
+  const res = await fetch('/api/transcribe', { method: 'POST', body: form })
+  const data = await res.json() as { text?: string; error?: string }
+  if (!res.ok) throw new Error(data.error ?? '音声認識に失敗しました')
+  return data.text ?? ''
+}
+
 export async function fetchMe(): Promise<User | null> {
   const res = await fetch('/api/auth/me')
   const data = await res.json() as { user: User | null }
