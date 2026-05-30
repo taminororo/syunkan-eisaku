@@ -97,34 +97,16 @@ export interface DashboardData {
   topWeakCategories: WeakCategory[]
 }
 
-// ─── Web Speech API ───────────────────────────────────────────────────────────
+// ─── 音声入力（Whisper API） ────────────────────────────────────────────────────
 
-export interface ISpeechRecognitionEvent extends Event {
-  readonly resultIndex: number
-  readonly results: SpeechRecognitionResultList
-}
-
-export interface ISpeechRecognition extends EventTarget {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  onstart: (() => void) | null
-  onend: (() => void) | null
-  onerror: (() => void) | null
-  onresult: ((e: ISpeechRecognitionEvent) => void) | null
-  start(): void
-  stop(): void
-  abort(): void
-}
-
-export type SpeechRecognitionCtor = new () => ISpeechRecognition
-export type VoiceState = 'idle' | 'recording' | 'done'
+// idle: 待機 / recording: 録音中 / transcribing: Whisperで変換中 / done: 結果確定
+export type VoiceState = 'idle' | 'recording' | 'transcribing' | 'done'
 
 export interface UseVoiceInput {
   supported: boolean
   voiceState: VoiceState
-  interimText: string
   finalText: string
+  error: string | null
   start: () => void
   stop: () => void
   reset: () => void
