@@ -4,6 +4,7 @@ import {
   Dices,
   FileQuestion,
   GraduationCap,
+  Laptop,
   MessageCircle,
   Newspaper,
   Plane,
@@ -18,6 +19,7 @@ const ICONS: Record<Situation, LucideIcon> = {
   'レストラン・買い物': UtensilsCrossed,
   '学校・大学': GraduationCap,
   'ニュース・時事': Newspaper,
+  'IT・テクノロジー': Laptop,
   '自由テーマ': Dices,
 }
 
