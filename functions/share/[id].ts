@@ -50,12 +50,17 @@ function buildOgpHtml(title: string, description: string, url: string, imageUrl:
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="article">
 <meta property="og:image" content="${img}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="633">
+<meta property="og:image:alt" content="${t}">
 <meta property="og:site_name" content="瞬間英作文">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
 <meta name="twitter:image" content="${img}">
+<meta name="twitter:image:alt" content="${t}">
 </head>
 <body></body>
 </html>`
@@ -81,7 +86,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const title = `Flash Compose｜${data.situation}（${levelLabel}）${data.score}点`
   const description = '瞬間英作文に挑戦しました！'
   const origin = new URL(context.request.url).origin
-  const imageUrl = `${origin}/og-image-v2.png`
+  const imageUrl = `${origin}/og-image-v3.jpg`
 
   return new Response(buildOgpHtml(title, description, context.request.url, imageUrl), {
     headers: { 'Content-Type': 'text/html;charset=utf-8' },
