@@ -1,7 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { checkRateLimit, tooManyRequests } from './_rateLimit'
 
 interface Env {
   ANTHROPIC_API_KEY: string
+  RESULTS_KV: KVNamespace
 }
 
 interface RequestBody {
@@ -24,6 +26,9 @@ const levelDescriptions: Record<string, string> = {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const rl = await checkRateLimit(context.env.RESULTS_KV, context.request, 'generate', { limit: 20, windowSec: 60 })
+  if (!rl.ok) return tooManyRequests(rl)
+
   let body: RequestBody
   try {
     body = await context.request.json() as RequestBody
@@ -34,6 +39,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { situation, level, exclude } = body
   if (!situation || !level) {
     return jsonResponse({ error: '必須パラメータが不足しています' }, 400)
+  }
+  // exclude は型注釈上 string[] だが実行時は無検証なので、文字列配列であることを確かめる
+  if (exclude !== undefined && (!Array.isArray(exclude) || !exclude.every((s) => typeof s === 'string'))) {
+    return jsonResponse({ error: 'パラメータの形式が不正です' }, 400)
   }
 
   const apiKey = context.env.ANTHROPIC_API_KEY
