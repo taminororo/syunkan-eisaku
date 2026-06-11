@@ -1,4 +1,5 @@
 import type { Env } from './_env'
+import { checkRateLimit, tooManyRequests } from './_rateLimit'
 
 // Whisper の上限は 25MB。それを超える音声は事前に弾く。
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024
@@ -13,6 +14,10 @@ function jsonResponse(body: unknown, status = 200): Response {
 // 録音した音声を受け取り、OpenAI Whisper でテキストに変換して返す。
 // ブラウザから OpenAI を直接叩くとキーが露出するため、必ずこのサーバーを経由させる。
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  // 音声認識は1回のコストが高いので、他より厳しめのレート制限にする
+  const rl = await checkRateLimit(context.env.RESULTS_KV, context.request, 'transcribe', { limit: 10, windowSec: 60 })
+  if (!rl.ok) return tooManyRequests(rl)
+
   const apiKey = context.env.OPENAI_API_KEY
   if (!apiKey) {
     console.error('OPENAI_API_KEY が設定されていません')
