@@ -11,6 +11,9 @@ export function detectProvider(rawUrl: string): WebhookProvider | null {
     return null
   }
   if (url.protocol !== 'https:') return null
+  // ホスト名は白リストでも、パスに ; や %2f などを仕込むと判定をすり抜けて
+  // 別パスへPOSTさせられる余地がある。細工文字を含むパスは弾く。
+  if (/[;%\x00]/.test(url.pathname)) return null
 
   if (
     (url.hostname === 'discord.com' || url.hostname === 'discordapp.com') &&
@@ -56,13 +59,10 @@ export function buildReminderMessage(): string {
  * 例: 2026-05-30 09:00 JST に実行 → 返すべきは 2026-05-30 00:00 JST。
  *     これは UTC では 2026-05-29 15:00（JSTは UTC+9 だから）。
  *
- * TODO(human): nowMs（現在の UTC エポックミリ秒）を受け取り、
- *   その瞬間が属する「JSTの日」の0:00を UTC エポックミリ秒で返す。
- *   ヒント:
- *     - JST は UTC+9。9 * 60 * 60 * 1000 ミリ秒ずらすと「JSTの壁時計」になる
- *     - ずらした時刻の年/月/日(UTC系メソッドで読む)から 0:00 を組み立て、
- *       最後に +9時間ぶんを引いて UTC へ戻す
- *     - Date.UTC(year, monthIndex, day) が 0:00 のエポックミリ秒を作るのに使える
+ * nowMs（現在の UTC エポックミリ秒）を受け取り、その瞬間が属する
+ * 「JSTの日」の0:00を UTC エポックミリ秒で返す。
+ *   - JST は UTC+9。9時間ずらすと「JSTの壁時計」になる
+ *   - その年/月/日から 0:00 を組み立て、最後に +9時間ぶんを引いて UTC へ戻す
  */
 export function jstTodayStartUtcMs(nowMs: number): number {
   const JST_OFFSET = 9 * 60 * 60 * 1000
