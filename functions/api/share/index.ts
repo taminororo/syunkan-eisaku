@@ -1,8 +1,12 @@
 import { validateUserAnswer } from '../_userAnswerLimits'
+import { checkRateLimit, tooManyRequests } from '../_rateLimit'
 
 interface Env {
   RESULTS_KV: KVNamespace
 }
+
+// 1件あたりの保存サイズ上限（文字数）。未認証で書き込めるため濫用を抑える。
+const MAX_SHARE_CHARS = 50_000
 
 interface SharePayload {
   japanese: string
@@ -30,6 +34,9 @@ function generateId(): string {
 const TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const rl = await checkRateLimit(context.env.RESULTS_KV, context.request, 'share', { limit: 10, windowSec: 60 })
+  if (!rl.ok) return tooManyRequests(rl)
+
   let payload: SharePayload
   try {
     payload = await context.request.json() as SharePayload
@@ -44,6 +51,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     !situation || !level
   ) {
     return jsonResponse({ error: '必須パラメータが不足しています' }, 400)
+  }
+  if (!Number.isInteger(score) || score < 0 || score > 100) {
+    return jsonResponse({ error: 'スコアが不正です' }, 400)
   }
 
   const answerLimit = validateUserAnswer(userAnswer)
@@ -65,7 +75,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     createdAt: new Date().toISOString(),
   }
 
-  await context.env.RESULTS_KV.put(id, JSON.stringify(data), {
+  const serialized = JSON.stringify(data)
+  if (serialized.length > MAX_SHARE_CHARS) {
+    return jsonResponse({ error: 'データが大きすぎます' }, 400)
+  }
+
+  await context.env.RESULTS_KV.put(id, serialized, {
     expirationTtl: TTL_SECONDS,
   })
 
